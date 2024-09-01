@@ -22,7 +22,7 @@ const adminLogin = async (req, res) => {
         const token = jwt.sign(
             { userId: admin._id, email: admin.email },
             process.env.JWT_SECRET,
-            { expiresIn: '1h' } // Token expires in 1 hour
+            { expiresIn: '1h' } 
         );
 
         console.log('Generated token:', token);
@@ -42,14 +42,13 @@ const adminLogin = async (req, res) => {
 const categoryAdd = async (req, res) => {
     console.log('category added route founded');
     try {
-      const categoryName = req.body.categoryName;
-      
-      const imageFile = req.file;
+        
+        console.log('Form data:', req.body);
+    
+        const categoryName = req.body.categoryName;
+    
+        console.log('Category Name:', categoryName);
   
-      console.log('Category Name:', categoryName);
-      console.log('Image File:', imageFile);
-  
-      // Perform further processing with categoryName and imageFile as needed
   
       res.status(200).json({ message: 'Category added successfully' });
     } catch (error) {
