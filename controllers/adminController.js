@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const Admin = require('../models/admin');
-
+const Category=require('../models/categories')
 const adminLogin = async (req, res) => {
     console.log('admin login');
     const { email, password } = req.body;  
@@ -40,22 +40,60 @@ const adminLogin = async (req, res) => {
 
 
 const categoryAdd = async (req, res) => {
-    console.log('category added route founded');
+    console.log('Category add route found');
     try {
-        
-        console.log('Form data:', req.body);
-    
-        const categoryName = req.body.categoryName;
-    
+        console.log('Form data:', req.body.categoryName);
+
+        const { categoryName } = req.body;
+
+        if (!categoryName) {
+            return res.status(400).json({ message: 'Category name is required' });
+        }
+
+        const newCategory = new Category({ categoryName });
+
+        await newCategory.save();
+
         console.log('Category Name:', categoryName);
-  
-  
-      res.status(200).json({ message: 'Category added successfully' });
+        
+        
+        res.status(200).json({ message: 'Category added successfully',newCategory });
     } catch (error) {
-      console.log('Error:', error);
-      res.status(500).json({ message: 'Error adding category' });
+        console.log('Error:', error);
+        res.status(500).json({ message: 'Error adding category' });
+    }
+};
+
+const categoryGet = async (req, res) => {
+    try {
+        // Fetch all categories from the database
+        const categories = await Category.find();
+        
+        // Send the categories as a response
+        res.status(200).json(categories);
+    } catch (error) {
+        console.error('Error fetching categories:', error);
+        res.status(500).json({ message: 'Error fetching categories' });
+    }
+};
+
+const deleteCategory = async (req, res) => {
+    console.log('delete category route found');
+    
+    try {
+      const categoryId = req.params.id;
+      const deletedCategory = await Category.findByIdAndDelete(categoryId);
+  
+      if (!deletedCategory) {
+        return res.status(404).json({ message: 'Category not found' });
+      }
+  
+      res.status(200).json({ message: 'Category deleted successfully', category: deletedCategory });
+    } catch (error) {
+      res.status(500).json({ message: 'Error deleting category', error });
     }
   };
+  
   
 
 
@@ -66,5 +104,7 @@ const adminLogout = (req, res) => {
 module.exports = {
     adminLogin,
     adminLogout,
-    categoryAdd
+    categoryAdd,
+    categoryGet,
+    deleteCategory
 };
