@@ -94,7 +94,7 @@ const deleteCategory = async (req, res) => {
     }
   };
   
-  
+
 
 
 const adminLogout = (req, res) => {

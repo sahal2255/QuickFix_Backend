@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const adminRoute = require('./routes/adminRoute');
 const vendorRoute = require('./routes/vendorRoute')
+const userRoute = require('./routes/userRoute')
 const cloudinary = require('./services/cloudinaryConfig');
 
 const cors = require('cors');
@@ -23,6 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/', adminRoute);
 app.use('/', vendorRoute)
+app.use('/',userRoute)
 
 const mongoURI = process.env.MONGO_URL;
 
