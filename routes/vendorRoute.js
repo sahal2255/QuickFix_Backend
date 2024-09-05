@@ -2,13 +2,12 @@ const express=require('express')
 const router=express.Router()
 const vendorController=require('../controllers/vendorController')
 const authMiddleware=require('../middleware/authMiddleware')
-// const requestOTP  = require('../middleware/verifyotpMiddleware');
 
 const { route } = require('./adminRoute')
 const fileUpload = require('express-fileupload')
 router.use(fileUpload({
     useTempFiles: true,
-    tempFileDir: '/tmp/' // Temporary directory for file uploads
+    tempFileDir: '/tmp/' 
   }))
 
 

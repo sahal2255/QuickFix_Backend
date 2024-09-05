@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const Admin = require('../models/admin');
-const Category=require('../models/categories')
+const Category=require('../models/categories');
+const Vendor = require('../models/vendor');
 const adminLogin = async (req, res) => {
     console.log('admin login');
     const { email, password } = req.body;  
@@ -95,6 +96,18 @@ const deleteCategory = async (req, res) => {
   };
   
 
+  const getVendorList = async (req, res) => {
+    try {
+      const vendorList = await Vendor.find();  
+      console.log(vendorList);
+      res.status(200).json(vendorList);  
+    } catch (error) {
+      console.log('Error getting vendor list:', error);
+      res.status(500).json({ message: 'Failed to fetch vendor list' });
+    }
+  };
+  
+
 
 
 const adminLogout = (req, res) => {
@@ -106,5 +119,6 @@ module.exports = {
     adminLogout,
     categoryAdd,
     categoryGet,
-    deleteCategory
+    deleteCategory,
+    getVendorList
 };
