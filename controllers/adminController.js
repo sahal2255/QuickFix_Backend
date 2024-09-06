@@ -108,7 +108,9 @@ const deleteCategory = async (req, res) => {
   };
   
 
-
+const updateVendorStatus=async(rerq,res)=>{
+    const vendorList = await Vendor.findOneAndUpdate()
+}
 
 const adminLogout = (req, res) => {
     res.clearCookie('token'); 

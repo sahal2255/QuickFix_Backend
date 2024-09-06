@@ -100,6 +100,7 @@ const userLogin = async (req, res) => {
 }
 
 const refreshToken = async (req, res) => {
+   
     const { refreshToken } = req.cookies;  // Get refresh token from cookies
     console.log('refresh token get ',req.cookies);
     
@@ -144,6 +145,8 @@ const refreshToken = async (req, res) => {
 };
 
 const userLogout = async (req, res) => {
+    const user = req.user 
+    console.log(user,'hi')
     try {
         const { refreshToken } = req.cookies;
 
@@ -170,11 +173,27 @@ const userLogout = async (req, res) => {
     }
 };
 
+const CheckAuth = async (req, res) => {
+    const user = req.user; // Assuming req.user is populated from a middleware
+
+    if (!user) {
+        return res.status(401).json({ message: 'Unauthorized: No user found' });
+    }
+
+    return res.status(200).json({ message: 'Authenticated', user });
+};
+
+
+const service=async (req,res)=>{
+
+    
+}
 
 
 module.exports = {
     userSignup,
     userLogin,
     refreshToken,
-    userLogout
+    userLogout,
+    CheckAuth
 };

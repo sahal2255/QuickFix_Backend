@@ -3,6 +3,7 @@ const Vendor = require("../models/vendor");
 const cloudinary = require("../services/cloudinaryConfig");
 const otpService = require("../services/sendOtp"); // Corrected import
 const bcrypt = require("bcrypt");
+const Category = require("../models/categories");
 const pendingOTPs = {};
 
 const VendorRegister = async (req, res) => {
@@ -61,7 +62,7 @@ const VerifyOTP = async (req, res) => {
         return res.status(400).json({ message: "Missing required fields" });
       }
 
-      let imageUrl = "";
+      let imageUrl = "https://www.shutterstock.com/image-photo/mechanic-using-wrench-while-working-600nw-2184125681.jpg";
 
       const imageFileArray = formData.image[0];
       console.log("imageFileArray:", imageFileArray);
@@ -107,8 +108,6 @@ const VerifyOTP = async (req, res) => {
 
       // Set the token as a cookie
       res.cookie("token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
         maxAge:3600000
       });
 
@@ -132,34 +131,42 @@ const vendorLogin = async (req, res) => {
     // Find the vendor by email
     const vendor = await Vendor.findOne({ email });
     if (!vendor) {
+      console.log('Vendor not found for email:', email);
       return res.status(400).json({ message: 'Invalid email or password' });
     }
+
+    console.log('Vendor found:', vendor);
 
     // Compare the provided password with the hashed password stored in the database
     const isMatch = await bcrypt.compare(password, vendor.password);
     if (!isMatch) {
+      console.log('Password mismatch for vendor:', email);
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
+    console.log('Password matched for vendor:', email);
+
+    // Sign the JWT token
     const token = jwt.sign(
       { vendorId: vendor._id },
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
+    console.log('JWT token created successfully');
 
-    // Set the token as a cookie
+    // Set cookie for the token
     res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
       maxAge: 3600000, // 1 hour
     });
+    console.log('Token cookie set successfully');
 
-    res.status(200).json({ message: 'Login successful', success: true });
+    return res.status(200).json({ message: 'Login successful', success: true,token });
   } catch (error) {
-    console.error('Error during login:', error.message);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Error during login:', error);
+    return res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
   
 const vendorLogout=(req,res)=>{
   console.log('entering logout');
@@ -168,9 +175,31 @@ const vendorLogout=(req,res)=>{
   return res.status(200).json({message:'Logout Successful'})
 }
 
+const getCategories=async(req,res)=>{
+  console.log('loging to the getcategory');
+  try{
+    const categories=await Category.find()
+    console.log('vender category get',categories);
+    res.status(200).json(categories);
+    
+  }catch(error){
+    console.log('category found error');
+    
+  }
+  
+}
+const addService=async(req,res)=>{
+  console.log('found the add service section ');
+  
+  
+}
+
+
 module.exports = {
   VendorRegister,
   VerifyOTP,
   vendorLogin,
-  vendorLogout
+  vendorLogout,
+  getCategories,
+  addService
 };

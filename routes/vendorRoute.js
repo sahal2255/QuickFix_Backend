@@ -14,7 +14,9 @@ router.use(fileUpload({
 router.post('/vendor/register',vendorController.VendorRegister)
 router.post('/vendor/login',vendorController.vendorLogin)
 router.post('/vendor/verify-otp', vendorController.VerifyOTP);
-router.post('/vendor/logout',vendorController.vendorLogout)
+router.post('/vendor/logout',authMiddleware,vendorController.vendorLogout)
+router.get('/vendor/categoryget',authMiddleware,vendorController.getCategories)
+router.post('/vendor/addService',authMiddleware,vendorController.addService)
 
 
 module.exports=router
