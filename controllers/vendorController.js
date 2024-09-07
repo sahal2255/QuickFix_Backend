@@ -8,28 +8,25 @@ const pendingOTPs = {};
 
 const VendorRegister = async (req, res) => {
   try {
+    console.log('Received Form Data:', req.body);
+    console.log('Received Files:', req.file);
+
     const { name, email, phoneNumber, password, regId, location } = req.body;
-    const image = req.files?.image;
+    const image = req.file;
 
     if (image) {
-      const result = await cloudinary.uploader.upload(image.tempFilePath, {
-        folder: "QuickFix",
-      });
-
       const otp = otpService.generateOTP();
-      console.log(otp);
-      otpService.storeOTP(email, otp); // Store OTP for validation later
-      await otpService.sendOTP(email, otp); // Send OTP to user
+      console.log('Generated OTP:', otp);
+      otpService.storeOTP(email, otp);
+      await otpService.sendOTP(email, otp);
 
       pendingOTPs[email] = otp;
-
-      res
-        .status(200)
-        .json({
-          message:
-            "OTP sent to email. Please verify your OTP to complete registration.",
-          success: true,
-        });
+      console.log(pendingOTPs);
+      
+      res.status(200).json({
+        message: "OTP sent to email. Please verify your OTP to complete registration.",
+        success: true,
+      });
     } else {
       res.status(400).json({ message: "Image upload failed" });
     }
@@ -41,77 +38,70 @@ const VendorRegister = async (req, res) => {
 
 const VerifyOTP = async (req, res) => {
   try {
-    const { email, otp, formData } = req.body;
-    console.log("Received Email:", email);
-    console.log("Received OTP:", otp);
-    console.log("Received Form Data:", formData);
+    console.log("Received Form Data:", req.body);
+    console.log("Received File:", req.file);
+    console.log(pendingOTPs);
+
+    const email = req.body.email[0]?.toLowerCase(); // Handle array and normalize email
+    const otp = req.body.otp;
+
+    console.log('Email:', email);
+    console.log('OTP:', otp);
 
     const storedOtp = pendingOTPs[email]?.toString();
     const receivedOtp = otp?.toString();
 
-    console.log("Stored OTP:", storedOtp);
-    console.log("Received OTP:", receivedOtp);
+    console.log('Stored OTP:', storedOtp);
+    console.log('Received OTP:', receivedOtp);
+
+    
 
     if (storedOtp === receivedOtp) {
-      console.log("Entered condition", pendingOTPs[email]);
-
-      const { name, phoneNumber, password, regId, location } = formData;
-      console.log("Form details:", formData);
+      const { name, phoneNumber, password, regId, location } = req.body;
 
       if (!name || !phoneNumber || !password || !regId || !location) {
         return res.status(400).json({ message: "Missing required fields" });
       }
 
-      let imageUrl = "https://www.shutterstock.com/image-photo/mechanic-using-wrench-while-working-600nw-2184125681.jpg";
-
-      const imageFileArray = formData.image[0];
-      console.log("imageFileArray:", imageFileArray);
-
-      if (imageFileArray && imageFileArray.length > 0) {
-        const imageFile = imageFileArray[0];
-        console.log('Entering Cloudinary upload condition with file:', imageFile);
-
+      let imageUrl = '';
+      if (req.file) {
         const result = await cloudinary.uploader.upload(
-          imageFile.tempFilePath || imageFile.path || imageFile,
+          req.file.path,
           {
             folder: "QuickFix",
           }
         );
 
         console.log("Cloudinary upload result:", result);
-
-        imageUrl = result.secure_url; 
+        imageUrl = result.secure_url;
       }
 
-      // Hash the password before saving
-      const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
+      const hashedPassword = await bcrypt.hash(password, 10);
 
       const newVendor = new Vendor({
         name,
         email,
         phoneNumber,
-        password: hashedPassword, // Store the hashed password
+        password: hashedPassword,
         regId,
         location,
-        image: imageUrl, // Store the uploaded image URL
+        image: imageUrl,
       });
       console.log("New Vendor:", newVendor);
 
       await newVendor.save();
 
-      // Generate a JWT token
       const token = jwt.sign(
         { vendorId: newVendor._id },
         process.env.JWT_SECRET,
         { expiresIn: "1d" }
       );
 
-      // Set the token as a cookie
       res.cookie("token", token, {
-        maxAge:3600000
+        maxAge: 3600000
       });
 
-      res.status(201).json({ message: "Vendor registered successfully.",token, success: true });
+      res.status(201).json({ message: "Vendor registered successfully.", token, success: true });
     } else {
       res.status(400).json({ message: "Invalid or expired OTP." });
     }
@@ -120,6 +110,8 @@ const VerifyOTP = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+
 
 
 const vendorLogin = async (req, res) => {
@@ -188,11 +180,38 @@ const getCategories=async(req,res)=>{
   }
   
 }
-const addService=async(req,res)=>{
-  console.log('found the add service section ');
-  
-  
-}
+const addService = async (req, res) => {
+  try {
+    console.log('found the add service section');
+
+    const { categoryType, serviceName, price, duration } = req.body;
+    console.log('form data:', req.body);
+    
+    const image = req.file; 
+
+    console.log('image file found',image);
+    
+
+    // if (!image) {
+    //   return res.status(400).json({ error: 'Image is required' });
+    // }
+    // console.log('uploaded image:', image);
+
+    // const result = await cloudinary.uploader.upload(image.path, {
+    //   folder: 'QuickFix',
+    // });
+
+    // const imageUrl = result.secure_url;
+    // console.log('Cloudinary image URL:', imageUrl);
+
+
+    // res.status(201).json({ message: 'Service added successfully', imageUrl });
+  } catch (error) {
+    console.error('Error adding service:', error);
+    res.status(500).json({ error: 'Failed to add service' });
+  }
+};
+
 
 
 module.exports = {
