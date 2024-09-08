@@ -2,6 +2,8 @@ const jwt = require('jsonwebtoken');
 const Admin = require('../models/admin');
 const Category=require('../models/categories');
 const Vendor = require('../models/vendor');
+
+
 const adminLogin = async (req, res) => {
     console.log('admin login');
     const { email, password } = req.body;  
@@ -78,6 +80,11 @@ const categoryGet = async (req, res) => {
     }
 };
 
+const editCategory=async(req,res)=>{
+    
+}
+
+
 const deleteCategory = async (req, res) => {
     console.log('delete category route found');
     
@@ -99,7 +106,7 @@ const deleteCategory = async (req, res) => {
   const getVendorList = async (req, res) => {
     try {
       const vendorList = await Vendor.find();  
-      console.log(vendorList);
+    //   console.log(vendorList);
       res.status(200).json(vendorList);  
     } catch (error) {
       console.log('Error getting vendor list:', error);
@@ -108,8 +115,25 @@ const deleteCategory = async (req, res) => {
   };
   
 
-const updateVendorStatus=async(rerq,res)=>{
-    const vendorList = await Vendor.findOneAndUpdate()
+const updateVendorStatus=async(req,res)=>{
+    try {
+        const { vendorId, isEnabled } = req.body;
+
+        const vendor = await Vendor.findById(vendorId);
+        console.log('founded vendor',vendor);
+        
+        if (!vendor) {
+            return res.status(404).json({ message: 'Vendor not found' });
+        }
+
+        vendor.isEnabled = isEnabled;
+        await vendor.save();
+
+        res.status(200).json({ message: 'Vendor status updated successfully', vendor });
+    } catch (error) {
+        console.error('Error updating vendor status:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
 }
 
 const adminLogout = (req, res) => {
@@ -122,5 +146,6 @@ module.exports = {
     categoryAdd,
     categoryGet,
     deleteCategory,
-    getVendorList
+    getVendorList,
+    updateVendorStatus
 };

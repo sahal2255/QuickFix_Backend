@@ -11,4 +11,5 @@ router.post('/admin/categoryAdd',upload.none(),authMiddleware,adminController.ca
 router.get('/admin/categories',authMiddleware,adminController.categoryGet)
 router.delete('/admin/deleteCategory/:id',authMiddleware,adminController.deleteCategory)
 router.get('/admin/vendorlist',authMiddleware,adminController.getVendorList)
+router.put('/admin/updatevendorstatus',authMiddleware,adminController.updateVendorStatus)
 module.exports=router

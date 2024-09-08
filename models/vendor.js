@@ -9,6 +9,7 @@ const VendorSchema = new mongoose.Schema({
   location: { type: String, required: true },
   isEnabled:{ type: Boolean, default: false },
   image: { type: String }, 
+  amenities: { type: [String], default: [] }
 });
 
 const Vendor = mongoose.model('Vendor', VendorSchema);

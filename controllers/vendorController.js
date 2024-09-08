@@ -11,7 +11,7 @@ const VendorRegister = async (req, res) => {
     console.log('Received Form Data:', req.body);
     console.log('Received Files:', req.file);
 
-    const { name, email, phoneNumber, password, regId, location } = req.body;
+    const { name, email, phoneNumber, password, regId, location,amenities } = req.body;
     const image = req.file;
 
     if (image) {
@@ -57,9 +57,9 @@ const VerifyOTP = async (req, res) => {
     
 
     if (storedOtp === receivedOtp) {
-      const { name, phoneNumber, password, regId, location } = req.body;
+      const { name, phoneNumber, password, regId, location,amenities } = req.body;
 
-      if (!name || !phoneNumber || !password || !regId || !location) {
+      if (!name || !phoneNumber || !password || !regId || !location ||!amenities) {
         return res.status(400).json({ message: "Missing required fields" });
       }
 
@@ -86,22 +86,23 @@ const VerifyOTP = async (req, res) => {
         regId,
         location,
         image: imageUrl,
+        amenities
       });
       console.log("New Vendor:", newVendor);
 
       await newVendor.save();
 
-      const token = jwt.sign(
-        { vendorId: newVendor._id },
-        process.env.JWT_SECRET,
-        { expiresIn: "1d" }
-      );
+      // const token = jwt.sign(
+      //   { vendorId: newVendor._id },
+      //   process.env.JWT_SECRET,
+      //   { expiresIn: "1d" }
+      // );
 
-      res.cookie("token", token, {
-        maxAge: 3600000
-      });
+      // res.cookie("token", token, {
+      //   maxAge: 3600000
+      // });
 
-      res.status(201).json({ message: "Vendor registered successfully.", token, success: true });
+      res.status(201).json({ message: "Vendor registered successfully.", success: true });
     } else {
       res.status(400).json({ message: "Invalid or expired OTP." });
     }
