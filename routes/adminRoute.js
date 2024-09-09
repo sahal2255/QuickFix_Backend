@@ -13,5 +13,6 @@ router.delete('/admin/deleteCategory/:id',authMiddleware,adminController.deleteC
 router.put('/admin/updatevendorstatus',authMiddleware,adminController.updateVendorStatus)
 router.get('/admin/vendorlist',authMiddleware,adminController.getVendorList)
 router.put('/admin/updatecategory',upload.none(), adminController.editCategory);
+router.get('/admin/userlist',authMiddleware,adminController.userGet)
 
 module.exports=router

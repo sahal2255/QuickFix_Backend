@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const Admin = require('../models/admin');
 const Category=require('../models/categories');
 const Vendor = require('../models/vendor');
-
+const User=require('../models/user')
 
 const adminLogin = async (req, res) => {
     console.log('admin login');
@@ -164,6 +164,17 @@ const updateVendorStatus=async(req,res)=>{
     }
 }
 
+const userGet=async(req,res)=>{
+    console.log('found the userget route');
+    try{
+        const userList=await User.find()
+        res.status(200).json(userList)
+    }catch(error){
+        console.log('fetching server side error',error);
+        
+    }
+}
+
 const adminLogout = (req, res) => {
     res.clearCookie('token'); 
     return res.status(200).json({ message: 'Logout successful' });
@@ -176,5 +187,6 @@ module.exports = {
     deleteCategory,
     editCategory,
     getVendorList,
-    updateVendorStatus
+    updateVendorStatus,
+    userGet
 };
