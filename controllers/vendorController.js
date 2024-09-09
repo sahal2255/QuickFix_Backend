@@ -58,8 +58,17 @@ const VerifyOTP = async (req, res) => {
 
     if (storedOtp === receivedOtp) {
       const { name, phoneNumber, password, regId, location,amenities } = req.body;
+      console.log("Amenities:", amenities);
 
-      if (!name || !phoneNumber || !password || !regId || !location ||!amenities) {
+        const selectedAmenities = typeof amenities === 'string' 
+        ? amenities.split(',').map(item => item.trim()) // Split and trim each amenity if it's a string
+        : Array.isArray(amenities) 
+          ? amenities 
+          : [];
+
+      console.log("Processed Amenities (after check):", selectedAmenities);
+      console.log("Processed Amenities (after check):", selectedAmenities);
+      if (!name || !phoneNumber || !password || !regId || !location ) {
         return res.status(400).json({ message: "Missing required fields" });
       }
 
@@ -77,7 +86,8 @@ const VerifyOTP = async (req, res) => {
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
-
+      console.log('some');
+      
       const newVendor = new Vendor({
         name,
         email,
@@ -86,21 +96,13 @@ const VerifyOTP = async (req, res) => {
         regId,
         location,
         image: imageUrl,
-        amenities
+        amenities:selectedAmenities
       });
       console.log("New Vendor:", newVendor);
 
       await newVendor.save();
 
-      // const token = jwt.sign(
-      //   { vendorId: newVendor._id },
-      //   process.env.JWT_SECRET,
-      //   { expiresIn: "1d" }
-      // );
-
-      // res.cookie("token", token, {
-      //   maxAge: 3600000
-      // });
+      
 
       res.status(201).json({ message: "Vendor registered successfully.", success: true });
     } else {
@@ -130,6 +132,11 @@ const vendorLogin = async (req, res) => {
 
     console.log('Vendor found:', vendor);
 
+    // Check if the vendor's isEnabled status is false
+    if (!vendor.isEnabled) {
+      console.log('Vendor is under verification:', email);
+      return res.status(403).json({ message: 'Your account is under verification. Please wait for approval.' });
+    }
     // Compare the provided password with the hashed password stored in the database
     const isMatch = await bcrypt.compare(password, vendor.password);
     if (!isMatch) {

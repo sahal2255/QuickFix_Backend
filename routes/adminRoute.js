@@ -10,6 +10,8 @@ router.post('/admin/logout', authMiddleware,adminController.adminLogout);
 router.post('/admin/categoryAdd',upload.none(),authMiddleware,adminController.categoryAdd)
 router.get('/admin/categories',authMiddleware,adminController.categoryGet)
 router.delete('/admin/deleteCategory/:id',authMiddleware,adminController.deleteCategory)
+router.put('/admin/updatecategory',authMiddleware,adminController.editCategory)
 router.get('/admin/vendorlist',authMiddleware,adminController.getVendorList)
-router.put('/admin/updatevendorstatus',authMiddleware,adminController.updateVendorStatus)
+router.put('/admin/updatecategory',upload.none(), adminController.editCategory);
+
 module.exports=router

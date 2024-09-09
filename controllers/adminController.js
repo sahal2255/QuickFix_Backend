@@ -80,9 +80,37 @@ const categoryGet = async (req, res) => {
     }
 };
 
-const editCategory=async(req,res)=>{
-    
-}
+const editCategory = async (req, res) => {
+    try {
+        console.log('Received body:', req.body);
+
+        
+      const { categoryId, categoryName } = req.body;
+  
+      console.log('categoryId:', categoryId);
+      console.log('categoryName:', categoryName);
+  
+      if (!categoryId || !categoryName) {
+        return res.status(400).json({ message: 'Category ID and name are required' });
+      }
+  
+      const updatedCategory = await Category.findByIdAndUpdate(
+        categoryId,
+        { categoryName },
+        { new: true }
+      );
+  
+      if (!updatedCategory) {
+        return res.status(404).json({ message: 'Category not found' });
+      }
+  
+      res.json({ updatedCategory, message: 'Category updated successfully' });
+    } catch (error) {
+      console.error('Error updating category:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  };
+  
 
 
 const deleteCategory = async (req, res) => {
@@ -146,6 +174,7 @@ module.exports = {
     categoryAdd,
     categoryGet,
     deleteCategory,
+    editCategory,
     getVendorList,
     updateVendorStatus
 };
