@@ -83,13 +83,13 @@ const userLogin = async (req, res) => {
             httpOnly: true,
             secure: true,
             sameSite: 'None',
-            expires: new Date(Date.now() + 15 * 60 * 1000) // 15 minutes
+            expires: new Date(Date.now() + 5 * 60 * 1000)  // 5 minutes
         });
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: true,
             sameSite: 'None',
-            expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+            expires: new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
         });
 
         return res.status(200).json({ message: 'User logged in successfully' });
@@ -174,7 +174,7 @@ const userLogout = async (req, res) => {
 };
 
 const CheckAuth = async (req, res) => {
-    const user = req.user; // Assuming req.user is populated from a middleware
+    const user = req.user; 
 
     if (!user) {
         return res.status(401).json({ message: 'Unauthorized: No user found' });
