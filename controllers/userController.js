@@ -143,8 +143,6 @@ const refreshToken = async (req, res) => {
 
 
 const userLogout = async (req, res) => {
-    const user = req.user 
-    console.log(user,'hi')
     try {
         const { refreshToken } = req.cookies;
 
@@ -157,10 +155,11 @@ const userLogout = async (req, res) => {
             return res.status(400).json({ message: 'Invalid refresh token' });
         }
 
+        // Clear the refresh token in the database
         user.refreshToken = null;
         await user.save();
 
-        // Clear cookies
+        // Clear the cookies for accessToken and refreshToken
         res.cookie('accessToken', '', { httpOnly: true, secure: true, sameSite: 'Strict', expires: new Date(0) });
         res.cookie('refreshToken', '', { httpOnly: true, secure: true, sameSite: 'Strict', expires: new Date(0) });
 
@@ -170,6 +169,7 @@ const userLogout = async (req, res) => {
         return res.status(500).json({ message: 'Server error' });
     }
 };
+
 
 const CheckAuth = async (req, res) => {
     const user = req.user; 
