@@ -100,10 +100,8 @@ const userLogin = async (req, res) => {
 }
 
 const refreshToken = async (req, res) => {
-   
-    const { refreshToken } = req.cookies;  // Get refresh token from cookies
-    console.log('refresh token get ',req.cookies);
-    
+    const { refreshToken } = req.cookies; // Get refresh token from cookies
+
     if (!refreshToken) {
         return res.status(403).json({ message: 'Refresh token not found. Please log in again.' });
     }
@@ -118,22 +116,21 @@ const refreshToken = async (req, res) => {
         // Verify the refresh token
         jwt.verify(refreshToken, process.env.REFRESH_SECRET, (err, userPayload) => {
             if (err) {
-                // Refresh token is invalid, log the user out
-                user.refreshToken = null;
-                user.save();  // Clear the refresh token
+                // Refresh token is invalid or expired
+                user.refreshToken = null; // Clear the refresh token
+                user.save(); // Save the user without the refresh token
                 return res.status(403).json({ message: 'Invalid refresh token. Please log in again.' });
             }
 
             // If refresh token is valid, generate a new access token
             const newAccessToken = generateAccessToken({ id: userPayload.id, email: userPayload.email });
-            console.log(newAccessToken);
-            
-            // Send the new access token in the response
+
+            // Send the new access token in the response cookie
             res.cookie('accessToken', newAccessToken, {
                 httpOnly: true,
                 secure: true,
                 sameSite: 'Strict',
-                expires: new Date(Date.now() + 15 * 60 * 1000)  // Access token valid for 15 minutes
+                expires: new Date(Date.now() + 5 * 60 * 1000),  // Access token valid for 5 minutes
             });
 
             return res.status(200).json({ message: 'Access token refreshed successfully' });
@@ -143,6 +140,7 @@ const refreshToken = async (req, res) => {
         return res.status(500).json({ message: 'Server error' });
     }
 };
+
 
 const userLogout = async (req, res) => {
     const user = req.user 
@@ -189,11 +187,35 @@ const service=async (req,res)=>{
     
 }
 
+const userProfile = async (req, res) => {
+    try {
+        console.log('user Profile route hit');
+        const userId = req.user.id; 
+        console.log(userId);
+        
+
+        // Fetch user data from the database
+        const user = await User.findById(userId).select('-password -refreshToken'); // Exclude password field for security
+        console.log('founded user',user);
+        
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Send the user data
+        res.status(200).json(user);
+    } catch (error) {
+        console.error('Error fetching user profile:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 
 module.exports = {
     userSignup,
     userLogin,
     refreshToken,
     userLogout,
-    CheckAuth
+    CheckAuth,
+    userProfile
 };
