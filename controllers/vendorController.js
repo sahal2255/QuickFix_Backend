@@ -6,6 +6,14 @@ const bcrypt = require("bcrypt");
 const Category = require("../models/categories");
 const pendingOTPs = {};
 
+
+// const CategoryGet=async (req,res)=>{
+//   try{
+//     const Categories=await Category.find()
+//     res.status(200).json()
+
+//   }
+// }
 const VendorRegister = async (req, res) => {
   try {
     console.log('Received Form Data:', req.body);
@@ -57,7 +65,7 @@ const VerifyOTP = async (req, res) => {
     
 
     if (storedOtp === receivedOtp) {
-      const { name, phoneNumber, password, regId, location,amenities } = req.body;
+      const { name, phoneNumber, password, regId,category, location,amenities } = req.body;
       console.log("Amenities:", amenities);
 
         const selectedAmenities = typeof amenities === 'string' 
@@ -68,7 +76,7 @@ const VerifyOTP = async (req, res) => {
 
       console.log("Processed Amenities (after check):", selectedAmenities);
       console.log("Processed Amenities (after check):", selectedAmenities);
-      if (!name || !phoneNumber || !password || !regId || !location ) {
+      if (!name || !phoneNumber || !password || !regId || !location ||!category) {
         return res.status(400).json({ message: "Missing required fields" });
       }
 
@@ -94,6 +102,7 @@ const VerifyOTP = async (req, res) => {
         phoneNumber,
         password: hashedPassword,
         regId,
+        category,
         location,
         image: imageUrl,
         amenities:selectedAmenities
@@ -223,6 +232,7 @@ const addService = async (req, res) => {
 
 
 module.exports = {
+  
   VendorRegister,
   VerifyOTP,
   vendorLogin,

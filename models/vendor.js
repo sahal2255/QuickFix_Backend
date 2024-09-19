@@ -6,6 +6,7 @@ const VendorSchema = new mongoose.Schema({
   phoneNumber: { type: String, required: true },
   password: { type: String, required: true },
   regId: { type: String, required: true },
+  category:{type:String,required:true},
   location: { type: String, required: true },
   isEnabled:{ type: Boolean, default: false },
   image: { type: String }, 

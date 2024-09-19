@@ -18,7 +18,7 @@ router.post('/vendor/login',vendorController.vendorLogin)
 router.post('/vendor/verify-otp', upload.single('image'), vendorController.VerifyOTP);
 
 router.post('/vendor/logout',authMiddleware,vendorController.vendorLogout)
-router.get('/vendor/categoryget',authMiddleware,vendorController.getCategories)
+router.get('/vendor/categoryget',vendorController.getCategories)
 router.post('/vendor/addService',authMiddleware,upload.single(),vendorController.addService)
 
 
