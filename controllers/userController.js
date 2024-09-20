@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 const User = require('../models/user');
 const jwt = require('jsonwebtoken')
 const { generateAccessToken, generateRefreshToken } = require('../utils/authToken');
-
+const Vendor=require('../models/vendor')
 const userSignup = async (req, res) => {
     console.log('Entering the backend for the user signup');
 
@@ -89,7 +89,7 @@ const userLogin = async (req, res) => {
             httpOnly: true,
             secure: true,
             sameSite: 'None',
-            expires: new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
+            expires: new Date(Date.now() + 1 * 60 * 60 * 1000) // 1 hour
         });
 
         return res.status(200).json({ message: 'User logged in successfully' });
@@ -177,51 +177,51 @@ const userLogout = async (req, res) => {
 };
 
 
-const CheckAuth = async (req, res) => {
-    const user = req.user; 
+// const CheckAuth = async (req, res) => {
+//     const user = req.user; 
 
-    if (!user) {
-        return res.status(401).json({ message: 'Unauthorized: No user found' });
-    }
-
-    return res.status(200).json({ message: 'Authenticated', user });
-};
-
-
-const service=async (req,res)=>{
-
-    
-}
+//     if (!user) {
+//         return res.status(401).json({ message: 'Unauthorized: No user found' });
+//     }
+//     return res.status(200).json({ message: 'Authenticated', user });
+// };
 
 const userProfile = async (req, res) => {
     try {
         console.log('user Profile route hit');
         const userId = req.user.id; 
         console.log(userId);
-        
-
-        // Fetch user data from the database
         const user = await User.findById(userId).select('-password -refreshToken'); // Exclude password field for security
         console.log('founded user',user);
-        
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-
-        // Send the user data
         res.status(200).json(user);
     } catch (error) {
         console.error('Error fetching user profile:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
-
+const service=async (req,res)=>{
+    console.log('hitting to the service get rout ');
+    try{
+        let Services=await Vendor.find()
+        console.log(Services )
+        res.status(200).json(Services)
+    }catch(error){
+        console.log('service getting error');
+        res.status(500).json({message:'Error fetching Services'})
+    }
+    
+     
+ }
 
 module.exports = {
     userSignup,
     userLogin,
     refreshToken,
     userLogout,
-    CheckAuth,
-    userProfile
+    // CheckAuth,
+    userProfile,
+    service
 };
