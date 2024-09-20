@@ -206,7 +206,7 @@ const service=async (req,res)=>{
     console.log('hitting to the service get rout ');
     try{
         let Services=await Vendor.find()
-        console.log(Services )
+        // console.log(Services )
         res.status(200).json(Services)
     }catch(error){
         console.log('service getting error');
