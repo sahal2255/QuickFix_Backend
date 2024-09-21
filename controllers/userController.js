@@ -109,6 +109,7 @@ const refreshToken = async (req, res) => {
     }
 
     try {
+        // Find user by refresh token in the database
         const user = await User.findOne({ refreshToken });
         if (!user) {
             console.log('User not found for refresh token');
@@ -119,32 +120,35 @@ const refreshToken = async (req, res) => {
         jwt.verify(refreshToken, process.env.REFRESH_SECRET, (err, userPayload) => {
             if (err) {
                 console.log('Refresh token verification failed:', err.message);
-                user.refreshToken = null; // Clear the refresh token
-                user.save(); // Save the user without the refresh token
+                user.refreshToken = null; // Clear the refresh token if it's invalid
+                user.save(); // Save changes in the user document
                 return res.status(403).json({ message: 'Invalid refresh token. Please log in again.' });
             }
 
             console.log('Refresh token verified, generating new access token for user:', userPayload.id);
 
+            // Generate a new access token
             const newAccessToken = generateAccessToken({ id: userPayload.id, email: userPayload.email });
 
             console.log('New access token generated:', newAccessToken);
 
+            // Set the new access token in cookies
             res.cookie('accessToken', newAccessToken, {
                 httpOnly: true,
-                secure: true,
+                secure: true, // Use true if using HTTPS
                 sameSite: 'Strict',
-                expires: new Date(Date.now() + 5 * 60 * 1000),  
+                expires: new Date(Date.now() + 5 * 60 * 1000),  // Set the expiration time of 5 minutes
             });
 
             console.log('New access token sent to client via cookie');
-            return res.status(200).json({ message: 'Access token refreshed successfully' });
+            return res.status(200).json({ accessToken: newAccessToken });
         });
     } catch (error) {
         console.error('Error during token refresh process:', error);
         return res.status(500).json({ message: 'Server error' });
     }
 };
+
 
 
 
@@ -188,11 +192,8 @@ const userLogout = async (req, res) => {
 
 const userProfile = async (req, res) => {
     try {
-        console.log('user Profile route hit');
         const userId = req.user.id; 
-        console.log(userId);
         const user = await User.findById(userId).select('-password -refreshToken'); // Exclude password field for security
-        console.log('founded user',user);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -203,10 +204,8 @@ const userProfile = async (req, res) => {
     }
 };
 const service=async (req,res)=>{
-    console.log('hitting to the service get rout ');
     try{
         let Services=await Vendor.find()
-        // console.log(Services )
         res.status(200).json(Services)
     }catch(error){
         console.log('service getting error');
@@ -214,6 +213,20 @@ const service=async (req,res)=>{
     }
     
      
+ }
+ const serviceDetails=async(req,res)=>{
+    // console.log('hitting servicedetails route');
+    const {serviceId}=req.params
+    // console.log('service id ',serviceId);
+    try{
+        const Details=await Vendor.findById(serviceId)
+        // console.log('founded srvice details',Details)
+        res.status(200).json(Details)
+
+    }catch(error){
+        console.error(error)
+    }
+    
  }
 
 module.exports = {
@@ -223,5 +236,6 @@ module.exports = {
     userLogout,
     // CheckAuth,
     userProfile,
-    service
+    service,
+    serviceDetails
 };

@@ -11,6 +11,7 @@ router.get('/verify-token',authenticateToken,userController.refreshToken)
 router.post('/logout',authenticateToken,userController.userLogout)
 router.get('/profile',authenticateToken,userController.userProfile)
 router.get('/services',authenticateToken,userController.service)
+router.get('/service/:serviceId',authenticateToken,userController.serviceDetails)
 
 
 module.exports=router
