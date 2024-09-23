@@ -80,13 +80,13 @@ const userLogin = async (req, res) => {
         user.refreshToken = refreshToken;
         await user.save();
         res.cookie('accessToken', accessToken, {
-            httpOnly: true,
+            httpOnly: false,
             secure: true,
             sameSite: 'None',
             expires: new Date(Date.now() + 5 * 60 * 1000)  // 5 minutes
         });
         res.cookie('refreshToken', refreshToken, {
-            httpOnly: true,
+            httpOnly: false,
             secure: true,
             sameSite: 'None',
             expires: new Date(Date.now() + 1 * 60 * 60 * 1000) // 1 hour
@@ -100,54 +100,63 @@ const userLogin = async (req, res) => {
 }
 
 const refreshToken = async (req, res) => {
-    const { refreshToken } = req.cookies; // Get refresh token from cookies
-    console.log('Received refresh token:', refreshToken);
-
-    if (!refreshToken) {
-        console.log('No refresh token found');
-        return res.status(403).json({ message: 'Refresh token not found. Please log in again.' });
+    const accessToken = req.cookies.accessToken; // Get access token from cookie
+    console.log('hello',accessToken)
+    const  refreshToken  = req.cookies.refreshToken; // Get refresh token from cookie
+  console.log('hail',refreshToken);
+  
+    // Check if access token is available
+    if (accessToken) {
+        console.log('Access token is already present in the cookie.');
+        return res.status(200).json({ message: 'Access token is still valid.' });
     }
-
+  
+    // If no access token, check for the refresh token
+    if (!refreshToken) {
+        console.log('Refresh token missing. Please log in again.');
+        return res.status(403).json({ message: 'Refresh token missing. Please log in again.' });
+    }
+  
     try {
-        // Find user by refresh token in the database
+        console.log('Verifying refresh token...');
         const user = await User.findOne({ refreshToken });
+        
         if (!user) {
-            console.log('User not found for refresh token');
-            return res.status(403).json({ message: 'Invalid refresh token. Please log in again.' });
+            console.log('Invalid refresh token.');
+            return res.status(403).json({ message: 'Invalid refresh token.' });
         }
-
+  
         // Verify the refresh token
         jwt.verify(refreshToken, process.env.REFRESH_SECRET, (err, userPayload) => {
             if (err) {
-                console.log('Refresh token verification failed:', err.message);
-                user.refreshToken = null; // Clear the refresh token if it's invalid
-                user.save(); // Save changes in the user document
+                console.log('Invalid refresh token. Please log in again.');
                 return res.status(403).json({ message: 'Invalid refresh token. Please log in again.' });
             }
-
-            console.log('Refresh token verified, generating new access token for user:', userPayload.id);
-
+  
             // Generate a new access token
-            const newAccessToken = generateAccessToken({ id: userPayload.id, email: userPayload.email });
+            const newAccessToken = jwt.sign(
+                { id: userPayload.id, email: userPayload.email },
+                process.env.ACCESS_SECRET,
+                { expiresIn: '5m' }
+            );
 
-            console.log('New access token generated:', newAccessToken);
-
-            // Set the new access token in cookies
+            // Set the new access token in the cookie
             res.cookie('accessToken', newAccessToken, {
-                httpOnly: true,
-                secure: true, // Use true if using HTTPS
-                sameSite: 'Strict',
-                expires: new Date(Date.now() + 5 * 60 * 1000),  // Set the expiration time of 5 minutes
+                httpOnly: false,
+                secure: true,
+                sameSite: 'None',
+                expires: new Date(Date.now() + 5 * 60 * 1000) // 5 minutes
             });
 
-            console.log('New access token sent to client via cookie');
-            return res.status(200).json({ accessToken: newAccessToken });
+            console.log('New access token created:', newAccessToken);
+            return res.status(200).json({ message: 'Access token refreshed successfully' });
         });
     } catch (error) {
-        console.error('Error during token refresh process:', error);
-        return res.status(500).json({ message: 'Server error' });
+        console.error('Server error during token refresh:', error);
+        return res.status(500).json({ message: 'Server error during token refresh' });
     }
 };
+
 
 
 

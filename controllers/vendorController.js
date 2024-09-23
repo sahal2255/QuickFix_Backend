@@ -4,6 +4,7 @@ const cloudinary = require("../services/cloudinaryConfig");
 const otpService = require("../services/sendOtp"); // Corrected import
 const bcrypt = require("bcrypt");
 const Category = require("../models/categories");
+const Service = require("../models/services");
 const pendingOTPs = {};
 
 
@@ -185,10 +186,9 @@ const vendorLogout=(req,res)=>{
 }
 
 const getCategories=async(req,res)=>{
-  console.log('loging to the getcategory');
   try{
     const categories=await Category.find()
-    console.log('vender category get',categories);
+    // console.log('vender category get',categories);
     res.status(200).json(categories);
     
   }catch(error){
@@ -198,31 +198,41 @@ const getCategories=async(req,res)=>{
   
 }
 const addService = async (req, res) => {
+  const vendorId = req.admin.vendorId;
+  console.log(vendorId)
   try {
     console.log('found the add service section');
-
     const { categoryType, serviceName, price, duration } = req.body;
     console.log('form data:', req.body);
-    
     const image = req.file; 
-
     console.log('image file found',image);
-    
+    if (!image) {
+      return res.status(400).json({ error: 'Image is required' });
+    }
+    console.log('uploaded image:', image);
+    const result = await cloudinary.uploader.upload(image.path, {
+      folder: 'QuickFix',
+    });
 
-    // if (!image) {
-    //   return res.status(400).json({ error: 'Image is required' });
-    // }
-    // console.log('uploaded image:', image);
-
-    // const result = await cloudinary.uploader.upload(image.path, {
-    //   folder: 'QuickFix',
-    // });
-
-    // const imageUrl = result.secure_url;
-    // console.log('Cloudinary image URL:', imageUrl);
+    const imageUrl = result.secure_url;
 
 
-    // res.status(201).json({ message: 'Service added successfully', imageUrl });
+    const newService=new Service({
+      vendorId:vendorId,
+      categoryType,
+      serviceName,
+      price,
+      duration,
+      imageUrl:imageUrl
+    })
+
+
+    console.log('new service',newService)
+
+    await newService.save()
+
+
+    res.status(201).json({ message: 'Service added successfully' });
   } catch (error) {
     console.error('Error adding service:', error);
     res.status(500).json({ error: 'Failed to add service' });

@@ -1,20 +1,32 @@
 const jwt = require('jsonwebtoken');
+const User = require('../models/user'); // Assuming you're using Mongoose and have a User model
 
-const authenticateToken = (req, res, next) => {
-    const token = req.cookies.accessToken; // Retrieve token from cookies
+// Middleware to verify refresh token
+const verifyRefreshToken = async (req, res, next) => {
+  const { refreshToken } = req.cookies; // Get refresh token from cookie
 
-    if (!token) {
-        return res.status(401).json({ message: 'Access token not found' });
+  if (!refreshToken) {
+    return res.status(401).json({ message: 'Refresh token missing' });
+  }
+
+  try {
+    // Verify the refresh token
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_SECRET);
+
+    // Find the user associated with this token
+    const user = await User.findOne({ _id: decoded.id, refreshToken });
+
+    if (!user) {
+      return res.status(403).json({ message: 'Invalid refresh token' });
     }
 
-    jwt.verify(token, process.env.ACCESS_SECRET, (err, user) => {
-        if (err) {
-            return res.status(403).json({ message: 'Invalid or expired access token' });
-        }
-
-        req.user = user; 
-        next(); 
-    });
+    // Store the decoded token info for further use in the next middleware
+    req.user = decoded;
+    next();
+  } catch (error) {
+    console.error('Error verifying refresh token:', error);
+    return res.status(403).json({ message: 'Invalid or expired refresh token' });
+  }
 };
 
-module.exports = { authenticateToken };
+module.exports = verifyRefreshToken;
