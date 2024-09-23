@@ -20,6 +20,6 @@ router.post('/vendor/verify-otp', upload.single('image'), vendorController.Verif
 router.post('/vendor/logout',authMiddleware,vendorController.vendorLogout)
 router.get('/vendor/categoryget',vendorController.getCategories)
 router.post('/vendor/addService',authMiddleware,upload.single('image'),vendorController.addService)
-
+router.get('/vendor/serviceget',authMiddleware,vendorController.serviceGet)
 
 module.exports=router

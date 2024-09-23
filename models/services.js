@@ -10,7 +10,8 @@ const ServiceSchema=new mongoose.Schema({
     serviceName:{type:String,required:true},
     price:{type:String,required:true},
     duration:{type:String,required:true},
-    serviceImage:{type:String}
+    serviceImage:{type:String},
+
 })
 
 const Service=mongoose.model('Service',ServiceSchema)

@@ -5,6 +5,7 @@ const otpService = require("../services/sendOtp"); // Corrected import
 const bcrypt = require("bcrypt");
 const Category = require("../models/categories");
 const Service = require("../models/services");
+const { service } = require("./userController");
 const pendingOTPs = {};
 
 
@@ -215,7 +216,8 @@ const addService = async (req, res) => {
     });
 
     const imageUrl = result.secure_url;
-
+    console.log('image url',imageUrl);
+    
 
     const newService=new Service({
       vendorId:vendorId,
@@ -223,7 +225,7 @@ const addService = async (req, res) => {
       serviceName,
       price,
       duration,
-      imageUrl:imageUrl
+      serviceImage:imageUrl
     })
 
 
@@ -232,14 +234,28 @@ const addService = async (req, res) => {
     await newService.save()
 
 
-    res.status(201).json({ message: 'Service added successfully' });
+    res.status(201).json({ message: 'Service added successfully',success:true,newService });
   } catch (error) {
     console.error('Error adding service:', error);
     res.status(500).json({ error: 'Failed to add service' });
   }
 };
 
+const serviceGet=async(req,res)=>{
+ const vendorId = req.admin.vendorId;
+ try{
+  const services = await Service.find({ vendorId });
+  console.log('service',services);
+  
+  if (!services || services.length === 0) {
+    return res.status(404).json({ message: 'No services found for this vendor' });
+  }
 
+  res.status(200).json( services )
+ }catch(error){
+  console.log('error for getting the vendor added services')
+ }
+}
 
 module.exports = {
   
@@ -248,5 +264,6 @@ module.exports = {
   vendorLogin,
   vendorLogout,
   getCategories,
-  addService
+  addService,
+  serviceGet
 };
