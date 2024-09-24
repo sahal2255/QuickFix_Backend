@@ -257,6 +257,21 @@ const serviceGet=async(req,res)=>{
  }
 }
 
+
+
+const vendorProfile=async(req,res)=>{
+  console.log('vendor profile route hitting')
+  const vendorId=req.admin.vendorId
+  console.log(vendorId)
+  try{
+    const profileData=await Vendor.findById(vendorId)
+    console.log('vendor profile',profileData)
+    res.status(200).json(profileData)
+  }catch(error){
+    console.log('error',error)
+  }
+}
+
 module.exports = {
   
   VendorRegister,
@@ -265,5 +280,6 @@ module.exports = {
   vendorLogout,
   getCategories,
   addService,
-  serviceGet
+  serviceGet,
+  vendorProfile
 };

@@ -21,5 +21,6 @@ router.post('/vendor/logout',authMiddleware,vendorController.vendorLogout)
 router.get('/vendor/categoryget',vendorController.getCategories)
 router.post('/vendor/addService',authMiddleware,upload.single('image'),vendorController.addService)
 router.get('/vendor/serviceget',authMiddleware,vendorController.serviceGet)
+router.get('/vendor/profile',authMiddleware,vendorController.vendorProfile)
 
 module.exports=router
