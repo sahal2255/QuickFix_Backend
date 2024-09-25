@@ -245,7 +245,7 @@ const serviceGet=async(req,res)=>{
  const vendorId = req.admin.vendorId;
  try{
   const services = await Service.find({ vendorId });
-  console.log('service',services);
+  // console.log('service',services);
   
   if (!services || services.length === 0) {
     return res.status(404).json({ message: 'No services found for this vendor' });
@@ -265,13 +265,61 @@ const vendorProfile=async(req,res)=>{
   console.log(vendorId)
   try{
     const profileData=await Vendor.findById(vendorId)
-    console.log('vendor profile',profileData)
+    // console.log('vendor profile',profileData)/
     res.status(200).json(profileData)
   }catch(error){
     console.log('error',error)
   }
 }
 
+const editVendorProfile = async (req, res) => {
+  const vendorId=req.admin.vendorId
+  console.log('vendor id',vendorId);
+  
+  if (!req.body) {
+    return res.status(400).json({ message: 'No data provided' });
+  }
+  const { name, email, phoneNumber, regId, location, amenities } = req.body;
+  console.log('Request body:', req.body);
+  const imageFile = req.file; // This is the file uploaded by multer
+  console.log('Image file:', imageFile);
+  let result;
+  try {
+    if (imageFile) {
+      result = await cloudinary.uploader.upload(imageFile.path, {
+        folder: 'QuickFix',
+      });
+      console.log('Image upload result:', result);
+    }
+
+    const updatedData = {
+      name,
+      email,
+      phoneNumber,
+      regId,
+      location,
+      amenities,
+      ...(result ? { image: result.secure_url } : {}), 
+    };
+    console.log('updated data',updatedData)
+    const vendor = await Vendor.findByIdAndUpdate(vendorId, updatedData, { new: true });
+    console.log('vendor',vendor)
+    if (!vendor) {
+      return res.status(404).json({ message: 'Vendor not found' });
+    }
+
+    return res.status(200).json({ message: 'Profile updated successfully', vendor });
+
+  } catch (error) {
+    console.error('Error during profile update:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+};
+
+
+const updateService=async(req,res)=>{
+  console.log('hitting the update service');
+}
 module.exports = {
   
   VendorRegister,
@@ -281,5 +329,7 @@ module.exports = {
   getCategories,
   addService,
   serviceGet,
-  vendorProfile
+  vendorProfile,
+  editVendorProfile,
+  updateService
 };
