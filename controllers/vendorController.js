@@ -179,12 +179,19 @@ const vendorLogin = async (req, res) => {
 };
 
   
-const vendorLogout=(req,res)=>{
-  console.log('entering logout');
-  
-  res.clearCookie('token')
-  return res.status(200).json({message:'Logout Successful'})
-}
+const vendorLogout = (req, res) => {
+  console.log('Entering logout');
+
+  res.clearCookie('token', {
+      secure: process.env.NODE_ENV === 'production', // Send only over HTTPS in production
+      sameSite: 'strict', // Prevent CSRF
+  });
+
+  // Send a success response
+  return res.status(200).json({ message: 'Logout Successful' });
+};
+
+module.exports = vendorLogout;
 
 const getCategories=async(req,res)=>{
   try{
@@ -371,6 +378,8 @@ const updateService = async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to update service', error });
   }
 };
+
+
 
 module.exports = {
   
