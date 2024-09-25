@@ -23,5 +23,6 @@ router.post('/vendor/addService',authMiddleware,upload.single('image'),vendorCon
 router.get('/vendor/serviceget',authMiddleware,vendorController.serviceGet)
 router.get('/vendor/profile',authMiddleware,vendorController.vendorProfile)
 router.put('/vendor/updateprofile',upload.single('image'),authMiddleware,vendorController.editVendorProfile)
+router.put('/vendor/updateservice/:id',upload.single('image'),authMiddleware,vendorController.updateService)
 
 module.exports=router

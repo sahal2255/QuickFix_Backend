@@ -317,9 +317,61 @@ const editVendorProfile = async (req, res) => {
 };
 
 
-const updateService=async(req,res)=>{
-  console.log('hitting the update service');
-}
+const updateService = async (req, res) => {
+  console.log('Hitting the update service endpoint');
+  
+  const vendorId = req.admin.vendorId; // Vendor ID from authenticated user (admin)
+  const serviceId = req.params.id; // Service ID from the route parameter
+  console.log('Service ID:', serviceId);
+
+  const { categoryType, serviceName, price, duration } = req.body;
+  console.log('Request body:', req.body);
+
+  const imageFile = req.file; // Multer file
+  console.log('image file',imageFile);
+  
+  let result; // For storing the image upload result
+
+  try {
+    // If an image file is provided, upload it to Cloudinary
+    if (imageFile) {
+      result = await cloudinary.uploader.upload(imageFile.path, {
+        folder: 'QuickFix',
+      });
+      console.log('Image upload result:', result);
+    }
+
+    // Prepare the updated data, including the image URL if available
+    const updatedData = {
+      categoryType,
+      serviceName,
+      price,
+      duration,
+      ...(result ? { serviceImage: result.secure_url } : {}), // Only add image if uploaded
+    };
+
+    console.log('Updated data:', updatedData);
+
+    // Find and update the service with the matching serviceId and vendorId
+    const updatedService = await Service.findOneAndUpdate(
+      { _id: serviceId, vendorId: vendorId }, // Match both serviceId and vendorId
+      { $set: updatedData },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedService) {
+      return res.status(404).json({ success: false, message: 'Service not found or not authorized to update' });
+    }
+
+    // Return success response with the updated service details
+    res.status(200).json({ success: true, message: 'Service updated successfully', updatedService });
+
+  } catch (error) {
+    console.log('Error updating service:', error);
+    res.status(500).json({ success: false, message: 'Failed to update service', error });
+  }
+};
+
 module.exports = {
   
   VendorRegister,
