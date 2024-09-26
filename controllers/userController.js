@@ -2,7 +2,8 @@ const bcrypt = require('bcrypt');
 const User = require('../models/user');
 const jwt = require('jsonwebtoken')
 const { generateAccessToken, generateRefreshToken } = require('../utils/authToken');
-const Vendor=require('../models/vendor')
+const Vendor=require('../models/vendor');
+const Service = require('../models/services');
 const userSignup = async (req, res) => {
     console.log('Entering the backend for the user signup');
 
@@ -224,13 +225,15 @@ const service=async (req,res)=>{
      
  }
  const serviceDetails=async(req,res)=>{
-    // console.log('hitting servicedetails route');
     const {serviceId}=req.params
-    // console.log('service id ',serviceId);
+    console.log('params id',serviceId);
+    
     try{
         const Details=await Vendor.findById(serviceId)
-        // console.log('founded srvice details',Details)
-        res.status(200).json(Details)
+        const ServiceTypes=await Service.find({vendorId:serviceId})
+        console.log('all service types',ServiceTypes);
+        
+        res.status(200).json({Details,ServiceTypes})
 
     }catch(error){
         console.error(error)

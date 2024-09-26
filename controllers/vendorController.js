@@ -252,9 +252,9 @@ const serviceGet=async(req,res)=>{
  const vendorId = req.admin.vendorId;
  try{
   const services = await Service.find({ vendorId });
-  // console.log('service',services);
+  console.log('service',services.length);
   
-  if (!services || services.length === 0) {
+  if (services.length === 0) {
     return res.status(404).json({ message: 'No services found for this vendor' });
   }
 
