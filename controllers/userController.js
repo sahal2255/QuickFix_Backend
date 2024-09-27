@@ -213,17 +213,36 @@ const userProfile = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
-const service=async (req,res)=>{
-    try{
-        let Services=await Vendor.find()
-        res.status(200).json(Services)
-    }catch(error){
-        console.log('service getting error');
-        res.status(500).json({message:'Error fetching Services'})
-    }
+const service = async (req, res) => {
+    console.log('Request received');
     
-     
- }
+    let { search } = req.query;  // Get the search query from the request
+    console.log('Search query:', search);
+    
+    try {
+        let Services;
+        
+        if (search) {
+            Services = await Vendor.find({
+                $or: [
+                    { name: { $regex: search, $options: 'i' } }, 
+                    { location: { $regex: search, $options: 'i' } }, 
+                    { category: { $regex: search, $options: 'i' } } 
+                ]
+            });
+        } else {
+            // No search query, return all vendors
+            Services = await Vendor.find();
+        }
+
+        // Send the response
+        res.status(200).json(Services);
+    } catch (error) {
+        console.log('Error fetching services:', error);
+        res.status(500).json({ message: 'Error fetching services' });
+    }
+};
+
  const serviceDetails=async(req,res)=>{
     const {serviceId}=req.params
     console.log('params id',serviceId);
