@@ -4,29 +4,21 @@ const jwt = require('jsonwebtoken')
 const { generateAccessToken, generateRefreshToken } = require('../utils/authToken');
 const Vendor=require('../models/vendor');
 const Service = require('../models/services');
+const Categories=require('../models/categories')
+
+
 const userSignup = async (req, res) => {
-    console.log('Entering the backend for the user signup');
-
-    console.log('Received data:', req.body);
-
     try {
         const { username, useremail, phonenumber, password } = req.body;
-
-        console.log('Username:', username);
-        console.log('Email:', useremail);
-        console.log('Phone Number:', phonenumber);
-
         if (!username || !useremail || !phonenumber || !password) {
             return res.status(400).json({ message: 'All fields are required' });
         }
-
         const existingUser = await User.findOne({ email: useremail });
         if (existingUser) {
             console.log('already exist');
             
             return res.status(400).json({ message: 'User already exists with this email' });
         }
-
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -40,8 +32,6 @@ const userSignup = async (req, res) => {
 
         await newUser.save();
         console.log('new user',newUser);
-        
-        
         return res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
         console.log('Signup error:', error);
@@ -191,15 +181,6 @@ const userLogout = async (req, res) => {
 };
 
 
-// const CheckAuth = async (req, res) => {
-//     const user = req.user; 
-
-//     if (!user) {
-//         return res.status(401).json({ message: 'Unauthorized: No user found' });
-//     }
-//     return res.status(200).json({ message: 'Authenticated', user });
-// };
-
 const userProfile = async (req, res) => {
     try {
         const userId = req.user.id; 
@@ -282,6 +263,18 @@ const service = async (req, res) => {
     }
  }
 
+ const categoryGet = async (req, res) => {
+    console.log('Hitting category route');
+    try {
+        const categories = await Categories.find(); 
+        res.status(200).json(categories); 
+    } catch (error) {
+        console.log('Category fetching error:', error);
+        res.status(500).json({ error: 'Error fetching categories' }); 
+    }
+}
+
+
 module.exports = {
     userSignup,
     userLogin,
@@ -291,5 +284,6 @@ module.exports = {
     userProfile,
     service,
     serviceDetails,
-    editProfile
+    editProfile,
+    categoryGet
 };

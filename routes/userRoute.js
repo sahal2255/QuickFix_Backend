@@ -11,5 +11,5 @@ router.get('/profile', authenticateToken, userController.userProfile);
 router.get('/services', authenticateToken, userController.service);
 router.get('/service/:serviceId', authenticateToken, userController.serviceDetails);
 router.put('/editprofile',authenticateToken,userController.editProfile)
-
+router.get('/getcategory',authenticateToken,userController.categoryGet)
 module.exports = router;
