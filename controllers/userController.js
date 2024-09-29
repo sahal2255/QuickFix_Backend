@@ -216,7 +216,7 @@ const userProfile = async (req, res) => {
 const service = async (req, res) => {
     console.log('Request received');
     
-    let { search } = req.query;  // Get the search query from the request
+    let { search } = req.query;  
     console.log('Search query:', search);
     
     try {
@@ -231,7 +231,6 @@ const service = async (req, res) => {
                 ]
             });
         } else {
-            // No search query, return all vendors
             Services = await Vendor.find();
         }
 
@@ -259,6 +258,29 @@ const service = async (req, res) => {
     }
     
  }
+ const editProfile=async(req,res)=>{
+    const {userName,email,phoneNumber}=req.body
+    const userId=req.user.id
+    try{
+        const updatedProfile=await User.findByIdAndUpdate(userId,
+            {
+                userName:userName,
+                email:email,
+                phoneNumber:phoneNumber
+            },
+            {
+                new:true
+            }
+        )
+        console.log('updated user profile',updatedProfile)
+        res.status(200).json({
+            message: 'Profile updated successfully',
+            user: updatedProfile
+          });
+    }catch(error){
+        console.log('Profile updation error',error)
+    }
+ }
 
 module.exports = {
     userSignup,
@@ -268,5 +290,6 @@ module.exports = {
     // CheckAuth,
     userProfile,
     service,
-    serviceDetails
+    serviceDetails,
+    editProfile
 };
