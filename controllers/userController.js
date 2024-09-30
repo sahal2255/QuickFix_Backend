@@ -197,23 +197,29 @@ const userProfile = async (req, res) => {
 const service = async (req, res) => {
     console.log('Request received');
     
-    let { search } = req.query;  
+    let { search, categories } = req.query; // Receive both search and categories
     console.log('Search query:', search);
+    console.log('Selected categories:', categories);
     
     try {
         let Services;
-        
+
+        let query = {};
+
         if (search) {
-            Services = await Vendor.find({
-                $or: [
-                    { name: { $regex: search, $options: 'i' } }, 
-                    { location: { $regex: search, $options: 'i' } }, 
-                    { category: { $regex: search, $options: 'i' } } 
-                ]
-            });
-        } else {
-            Services = await Vendor.find();
+            query.$or = [
+                { name: { $regex: search, $options: 'i' } },
+                { location: { $regex: search, $options: 'i' } },
+                { category: { $regex: search, $options: 'i' } }
+            ];
         }
+
+        if (categories) {
+            const categoryArray = categories.split(','); // Split the comma-separated categories string into an array
+            query.category = { $in: categoryArray };
+        }
+
+        Services = await Vendor.find(query);
 
         // Send the response
         res.status(200).json(Services);
@@ -222,6 +228,7 @@ const service = async (req, res) => {
         res.status(500).json({ message: 'Error fetching services' });
     }
 };
+
 
  const serviceDetails=async(req,res)=>{
     const {serviceId}=req.params
