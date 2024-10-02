@@ -12,4 +12,5 @@ router.get('/services', authenticateToken, userController.service);
 router.get('/service/:serviceId', authenticateToken, userController.serviceDetails);
 router.put('/editprofile',authenticateToken,userController.editProfile)
 router.get('/getcategory',authenticateToken,userController.categoryGet)
+router.post('/confirm-booking',authenticateToken,userController.confirmationForBooking)
 module.exports = router;

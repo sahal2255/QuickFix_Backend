@@ -280,17 +280,34 @@ const service = async (req, res) => {
         res.status(500).json({ error: 'Error fetching categories' }); 
     }
 }
+const confirmationForBooking=async(req,res)=>{
+    const {centerId,selectedServiceTypesDetails,totalPrice}=req.body
+    try{
+        // const serviceTypes=await Service.find ({vendorId:centerId})
+        // console.log('service types',serviceTypes)
 
+        const selectedServiceTypeId=selectedServiceTypesDetails.map(service=>service._id)
+        console.log(selectedServiceTypeId)
+        const matched=await Service.find({
+            vendorId:centerId,
+            '_id':{$in:selectedServiceTypeId}
+        })
+        console.log('matched services',matched)
 
+    }catch(error){
+        console.log('error',error)
+    }
+
+}
 module.exports = {
     userSignup,
     userLogin,
     refreshToken,
     userLogout,
-    // CheckAuth,
     userProfile,
     service,
     serviceDetails,
     editProfile,
-    categoryGet
+    categoryGet,
+    confirmationForBooking
 };
