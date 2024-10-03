@@ -281,18 +281,20 @@ const service = async (req, res) => {
     }
 }
 const confirmationForBooking=async(req,res)=>{
-    const {centerId,selectedServiceTypesDetails,totalPrice}=req.body
+    const {centerId,selectedServiceTypesDetails,totalPrice,paymentOption,formData}=req.body
+    console.log('form data',formData)
     try{
-        // const serviceTypes=await Service.find ({vendorId:centerId})
-        // console.log('service types',serviceTypes)
-
         const selectedServiceTypeId=selectedServiceTypesDetails.map(service=>service._id)
-        console.log(selectedServiceTypeId)
         const matched=await Service.find({
             vendorId:centerId,
             '_id':{$in:selectedServiceTypeId}
         })
-        console.log('matched services',matched)
+        const TotalPrice=matched.map(item=>Number(item.price))
+        const Total=TotalPrice.reduce((acc,cur)=>acc+cur)
+        if(Total===totalPrice){
+            console.log('same')
+        }   
+        console.log('payment option ',paymentOption)
 
     }catch(error){
         console.log('error',error)
