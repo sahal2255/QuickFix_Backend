@@ -7,6 +7,7 @@ const Vendor=require('../models/vendor');
 const Service = require('../models/services');
 const Categories=require('../models/categories')
 const Razorpay = require('razorpay');
+const Booking=require('../models/booking')
 
 
 const userSignup = async (req, res) => {
@@ -399,33 +400,63 @@ const paymentConfirm = async (req, res) => {
 };
 
 
-const confirmationForBooking=async(req,res)=>{
-    const { centerId, selectedServiceTypesDetails, totalPrice, paymentOption,paymentMethod,OrderAmount, formData } = req.body;
-    console.log('center id',centerId)
-    console.log('formData',formData)
-    console.log('payment method',paymentMethod)
-    console.log('order amount',OrderAmount/100)
-    try{
+const confirmationForBooking = async (req, res) => {
+    const { centerId, selectedServiceTypesDetails, totalPrice, paymentOption, paymentMethod, OrderAmount, formData } = req.body;
+    const userId = req.user.id; // Assume req.user.id is available through authentication middleware
+    console.log('formdata',formData)
+    try {
         const selectedServiceTypeId = selectedServiceTypesDetails.map(service => service._id);
+
         const matched = await Service.find({
             vendorId: centerId,
             '_id': { $in: selectedServiceTypeId }
         });
 
         const TotalPrice = matched.map(item => Number(item.price));
-        const Total = TotalPrice.reduce((acc, cur) => acc + cur);
+        const calculatedTotalPrice = TotalPrice.reduce((acc, cur) => acc + cur);
 
-        if (Total === totalPrice) {
-            console.log('Total prices match');
-        } else {
+        const PayableAmount = OrderAmount / 100;
+
+        // Validate if the total prices match
+        if (calculatedTotalPrice !== totalPrice) {
             return res.status(400).json({ error: 'Price mismatch' });
         }
 
-        console.log('Payment option:', paymentOption);
-    }catch(error){
-        console.log('error for confirming booking',error)
+        console.log('Prices match, proceeding with booking.');
+
+        const { paymentId, ownerName, phoneNumber, vehicleReg } = formData;
+
+        const balanceAmount = totalPrice - PayableAmount;
+
+        const newBooking = new Booking({
+            userId: userId,
+            vendorId: centerId, 
+            serviceTypeIds: selectedServiceTypeId, 
+            ownerName: ownerName, 
+            mobileNumber: phoneNumber, 
+            regNo: vehicleReg, 
+            paymentMethod: paymentMethod, 
+            paymentOption: paymentOption, 
+            totalAmount: totalPrice.toString(),
+            payedAmount: PayableAmount.toString(), 
+            paymentId: paymentId, 
+            balanceAmount: balanceAmount.toString() 
+        });
+
+        // Save the booking to the database
+        await newBooking.save();
+
+        // Respond with success message
+        res.status(200).json({
+            message: 'Booking confirmed and payment received.',
+            booking: newBooking
+        });
+    } catch (error) {
+        console.error('Error during booking confirmation:', error);
+        res.status(500).json({ error: 'Error confirming booking.' });
     }
-}
+};
+
 
 
 module.exports = {
