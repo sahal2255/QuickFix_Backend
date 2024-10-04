@@ -1,10 +1,12 @@
 const bcrypt = require('bcrypt');
 const User = require('../models/user');
 const jwt = require('jsonwebtoken')
+const springedge=require('springedge')
 const { generateAccessToken, generateRefreshToken } = require('../utils/authToken');
 const Vendor=require('../models/vendor');
 const Service = require('../models/services');
 const Categories=require('../models/categories')
+const Razorpay = require('razorpay');
 
 
 const userSignup = async (req, res) => {
@@ -280,27 +282,152 @@ const service = async (req, res) => {
         res.status(500).json({ error: 'Error fetching categories' }); 
     }
 }
-const confirmationForBooking=async(req,res)=>{
-    const {centerId,selectedServiceTypesDetails,totalPrice,paymentOption,formData}=req.body
-    console.log('form data',formData)
-    try{
-        const selectedServiceTypeId=selectedServiceTypesDetails.map(service=>service._id)
-        const matched=await Service.find({
-            vendorId:centerId,
-            '_id':{$in:selectedServiceTypeId}
-        })
-        const TotalPrice=matched.map(item=>Number(item.price))
-        const Total=TotalPrice.reduce((acc,cur)=>acc+cur)
-        if(Total===totalPrice){
-            console.log('same')
-        }   
-        console.log('payment option ',paymentOption)
 
-    }catch(error){
-        console.log('error',error)
+
+
+// const confirmationForBooking = async (req, res) => {
+//     const { centerId, selectedServiceTypesDetails, totalPrice, paymentOption, formData } = req.body;
+//     console.log('Form data:', formData);
+
+//     try {
+//         // Step 1: Validate the service details
+//         const selectedServiceTypeId = selectedServiceTypesDetails.map(service => service._id);
+//         const matched = await Service.find({
+//             vendorId: centerId,
+//             '_id': { $in: selectedServiceTypeId }
+//         });
+
+//         const TotalPrice = matched.map(item => Number(item.price));
+//         const Total = TotalPrice.reduce((acc, cur) => acc + cur);
+
+//         if (Total === totalPrice) {
+//             console.log('Total prices match');
+//         } else {
+//             return res.status(400).json({ error: 'Price mismatch' });
+//         }
+
+//         console.log('Payment option:', paymentOption);
+
+//         // Step 2: Extract phone number from formData
+//         let phoneNumber = formData.phoneNumber;
+//         if (!phoneNumber) {
+//             return res.status(400).json({ error: 'Phone number is required' });
+//         }
+
+//         // Step 3: Format phone number with country code (+91 for India)
+//         let formattedPhone = phoneNumber.trim();
+//         if (!formattedPhone.startsWith('+91')) {
+//             formattedPhone = '+91' + formattedPhone;
+//         }
+
+//         // Step 4: Generate OTP
+//         const generateOtp = () => {
+//             return Math.floor(100000 + Math.random() * 900000); // Generate a 6-digit OTP
+//         };
+        
+//         const otp = generateOtp(); // Generate the OTP
+
+//         // Step 5: Send OTP via Spring Edge
+//         const message = `Hello ${otp}, This is a test message from spring edge `; // Construct the message
+
+//         const params = { 
+//             'sender': 'SEDEMO', // Ensure 'SEDEMO' is a valid sender ID
+//             'apikey': '621492a44a89m36c2209zs4l7e74672cj', // Replace with your actual SpringEdge API key
+//             'to': [formattedPhone], // Phone number with country code
+//             'message': message, // Your SMS message
+//             'format': 'json' // Format can be 'json' or 'xml'
+//         };
+//         console.log('params',params)
+//         springedge.messages.send(params, 5000, function (err, response) {
+//             if (err) {
+//                 console.error('Error occurred while sending SMS:', err);
+//                 return res.status(500).json({ error: 'Failed to send OTP', details: err });
+//             }
+//             console.log('Response from SpringEdge:', response);
+        
+//             if (response.status === 'AWAITED-DLR') {
+//                 console.warn('Delivery report awaited. The message may not be delivered yet.');
+//             } else if (response.status === 'success') {
+//                 console.log('Message sent successfully.');
+//                 return res.status(200).json({ message: 'OTP sent successfully', otp });
+//             } else {
+//                 console.error('SpringEdge API Error:', response);
+//                 return res.status(500).json({ error: 'Failed to send OTP', details: response });
+//             }
+//         });
+
+//     } catch (error) {
+//         console.log('Error:', error);
+//         return res.status(500).json({ error: 'Internal server error', details: error });
+//     }
+// };
+
+
+const paymentConfirm = async (req, res) => {
+    try {
+        const { paymentAmount } = req.body;
+        console.log('Payment Amount:', paymentAmount);
+
+        var instance = new Razorpay({
+            key_id: process.env.RAZORPAY_KEY_ID,
+            key_secret: process.env.RAZORPAY_KEY_SECRET,
+        });
+
+        // Create an order object with payment amount (convert to smallest currency unit e.g. paise for INR)
+        const options = {
+            amount: paymentAmount * 100, // paymentAmount in the smallest currency unit
+            currency: "INR",
+            receipt: "receipt#1", // optional, can be dynamically generated
+        };
+
+        // Create a new order
+        const order = await instance.orders.create(options);
+        console.log('Order:', order);
+
+        // Respond with the order details
+        res.status(200).json({
+            success: true,
+            order,
+        });
+    } catch (error) {
+        console.error('Error in paymentConfirm:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Something went wrong',
+        });
     }
+};
 
+
+const confirmationForBooking=async(req,res)=>{
+    const { centerId, selectedServiceTypesDetails, totalPrice, paymentOption,paymentMethod,OrderAmount, formData } = req.body;
+    console.log('center id',centerId)
+    console.log('formData',formData)
+    console.log('payment method',paymentMethod)
+    console.log('order amount',OrderAmount/100)
+    try{
+        const selectedServiceTypeId = selectedServiceTypesDetails.map(service => service._id);
+        const matched = await Service.find({
+            vendorId: centerId,
+            '_id': { $in: selectedServiceTypeId }
+        });
+
+        const TotalPrice = matched.map(item => Number(item.price));
+        const Total = TotalPrice.reduce((acc, cur) => acc + cur);
+
+        if (Total === totalPrice) {
+            console.log('Total prices match');
+        } else {
+            return res.status(400).json({ error: 'Price mismatch' });
+        }
+
+        console.log('Payment option:', paymentOption);
+    }catch(error){
+        console.log('error for confirming booking',error)
+    }
 }
+
+
 module.exports = {
     userSignup,
     userLogin,
@@ -311,5 +438,6 @@ module.exports = {
     serviceDetails,
     editProfile,
     categoryGet,
+    paymentConfirm,
     confirmationForBooking
 };

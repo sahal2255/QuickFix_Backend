@@ -21,6 +21,8 @@
     "multer": "^1.4.5-lts.1",
     "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^6.9.14",
-    "nodemon": "^3.1.4"
+    "nodemon": "^3.1.4",
+    "razorpay": "^2.9.4",
+    "springedge": "^1.0.6"
   }
 }
