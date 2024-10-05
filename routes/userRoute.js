@@ -15,4 +15,6 @@ router.get('/getcategory',authenticateToken,userController.categoryGet)
 router.post('/razorpaypayment',authenticateToken,userController.paymentConfirm)
 router.post('/confirm-booking',authenticateToken,userController.confirmationForBooking)
 router.get('/servicehistory',authenticateToken,userController.serviceHistory)
+router.get('/viewsingledetails/:bookingId',authenticateToken,userController.singleServiceDetails)
+router.put('/cancelservice/:bookingId',authenticateToken,userController.cancelBookedService)
 module.exports = router;

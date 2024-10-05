@@ -58,7 +58,7 @@ const BookingSchema = new mongoose.Schema({
   // Service status, defaults to 'Pending'
   serviceStatus: {
     type: String,
-    enum: ['Pending','Confirmed', 'In Progress','Awaiting Parts','Ready For Pickup', 'Completed','Payment Pending','Closed'], // Define possible statuses
+    enum: ['Pending','Confirmed', 'In Progress','Awaiting Parts','Ready For Pickup', 'Cancelled','Completed','Payment Pending','Closed'], // Define possible statuses
     default: 'Pending',
   },
   // Completed service types, initially empty

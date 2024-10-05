@@ -379,7 +379,6 @@ const confirmationForBooking = async (req, res) => {
 };
 
 const serviceHistory=async(req,res)=>{
-    console.log('hitting to the history route')
     const userId=req.user.id
     console.log('userId',userId)
     try{
@@ -388,6 +387,56 @@ const serviceHistory=async(req,res)=>{
         res.status(200).json(serviceHistory)
     }catch(error){
         console.log('service history error',error)
+    }
+}
+
+const singleServiceDetails = async (req, res) => {
+    console.log('hitting single service details route');
+    const { bookingId } = req.params; // Get bookingId from request params
+    console.log('Booking ID:', bookingId);
+
+    try {
+        // Fetch the single booking details using the booking ID
+        const singleBooking = await Booking.findById(bookingId);
+
+        if (!singleBooking) {
+            return res.status(404).json({ message: 'Booking not found' });
+        }
+
+        console.log('Fetched single details:', singleBooking);
+
+        // Fetch the service type details based on the serviceTypeIds array in the booking
+        const serviceTypeDetails = await Service.find({
+            _id: { $in: singleBooking.serviceTypeIds } // Use $in to match all IDs in the array
+        });
+        console.log('service type details',serviceTypeDetails)
+
+        res.status(200).json({
+            booking: singleBooking,
+            serviceTypes: serviceTypeDetails // Return the service types
+        });
+    } catch (error) {
+        console.log('Error fetching single booking details or service types:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+
+const cancelBookedService=async(req,res)=>{
+    const {bookingId}=req.params
+    try{
+        const bookedService=await Booking.findById(bookingId)
+        if(!bookedService){
+            return res.status(404).json({message:'booking is not found'})
+        }        
+        bookedService.serviceStatus='Cancelled'
+        await bookedService.save()
+
+
+        console.log('Service cancelled successfully:', bookedService);
+        return res.status(200).json({ message: 'Service cancelled successfully', booking: bookedService });
+    }catch(error){
+        console.log('error for cancel service')
     }
 }
 
@@ -403,5 +452,7 @@ module.exports = {
     categoryGet,
     paymentConfirm,
     confirmationForBooking,
-    serviceHistory
+    serviceHistory,
+    singleServiceDetails,
+    cancelBookedService
 };
