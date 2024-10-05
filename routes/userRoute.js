@@ -14,4 +14,5 @@ router.put('/editprofile',authenticateToken,userController.editProfile)
 router.get('/getcategory',authenticateToken,userController.categoryGet)
 router.post('/razorpaypayment',authenticateToken,userController.paymentConfirm)
 router.post('/confirm-booking',authenticateToken,userController.confirmationForBooking)
+router.get('/servicehistory',authenticateToken,userController.serviceHistory)
 module.exports = router;

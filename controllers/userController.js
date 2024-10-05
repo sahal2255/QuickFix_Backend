@@ -285,85 +285,6 @@ const service = async (req, res) => {
 }
 
 
-
-// const confirmationForBooking = async (req, res) => {
-//     const { centerId, selectedServiceTypesDetails, totalPrice, paymentOption, formData } = req.body;
-//     console.log('Form data:', formData);
-
-//     try {
-//         // Step 1: Validate the service details
-//         const selectedServiceTypeId = selectedServiceTypesDetails.map(service => service._id);
-//         const matched = await Service.find({
-//             vendorId: centerId,
-//             '_id': { $in: selectedServiceTypeId }
-//         });
-
-//         const TotalPrice = matched.map(item => Number(item.price));
-//         const Total = TotalPrice.reduce((acc, cur) => acc + cur);
-
-//         if (Total === totalPrice) {
-//             console.log('Total prices match');
-//         } else {
-//             return res.status(400).json({ error: 'Price mismatch' });
-//         }
-
-//         console.log('Payment option:', paymentOption);
-
-//         // Step 2: Extract phone number from formData
-//         let phoneNumber = formData.phoneNumber;
-//         if (!phoneNumber) {
-//             return res.status(400).json({ error: 'Phone number is required' });
-//         }
-
-//         // Step 3: Format phone number with country code (+91 for India)
-//         let formattedPhone = phoneNumber.trim();
-//         if (!formattedPhone.startsWith('+91')) {
-//             formattedPhone = '+91' + formattedPhone;
-//         }
-
-//         // Step 4: Generate OTP
-//         const generateOtp = () => {
-//             return Math.floor(100000 + Math.random() * 900000); // Generate a 6-digit OTP
-//         };
-        
-//         const otp = generateOtp(); // Generate the OTP
-
-//         // Step 5: Send OTP via Spring Edge
-//         const message = `Hello ${otp}, This is a test message from spring edge `; // Construct the message
-
-//         const params = { 
-//             'sender': 'SEDEMO', // Ensure 'SEDEMO' is a valid sender ID
-//             'apikey': '621492a44a89m36c2209zs4l7e74672cj', // Replace with your actual SpringEdge API key
-//             'to': [formattedPhone], // Phone number with country code
-//             'message': message, // Your SMS message
-//             'format': 'json' // Format can be 'json' or 'xml'
-//         };
-//         console.log('params',params)
-//         springedge.messages.send(params, 5000, function (err, response) {
-//             if (err) {
-//                 console.error('Error occurred while sending SMS:', err);
-//                 return res.status(500).json({ error: 'Failed to send OTP', details: err });
-//             }
-//             console.log('Response from SpringEdge:', response);
-        
-//             if (response.status === 'AWAITED-DLR') {
-//                 console.warn('Delivery report awaited. The message may not be delivered yet.');
-//             } else if (response.status === 'success') {
-//                 console.log('Message sent successfully.');
-//                 return res.status(200).json({ message: 'OTP sent successfully', otp });
-//             } else {
-//                 console.error('SpringEdge API Error:', response);
-//                 return res.status(500).json({ error: 'Failed to send OTP', details: response });
-//             }
-//         });
-
-//     } catch (error) {
-//         console.log('Error:', error);
-//         return res.status(500).json({ error: 'Internal server error', details: error });
-//     }
-// };
-
-
 const paymentConfirm = async (req, res) => {
     try {
         const { paymentAmount } = req.body;
@@ -457,7 +378,18 @@ const confirmationForBooking = async (req, res) => {
     }
 };
 
-
+const serviceHistory=async(req,res)=>{
+    console.log('hitting to the history route')
+    const userId=req.user.id
+    console.log('userId',userId)
+    try{
+        const serviceHistory=await Booking.find({userId})
+        console.log('serviceHistory',serviceHistory)
+        res.status(200).json(serviceHistory)
+    }catch(error){
+        console.log('service history error',error)
+    }
+}
 
 module.exports = {
     userSignup,
@@ -470,5 +402,6 @@ module.exports = {
     editProfile,
     categoryGet,
     paymentConfirm,
-    confirmationForBooking
+    confirmationForBooking,
+    serviceHistory
 };

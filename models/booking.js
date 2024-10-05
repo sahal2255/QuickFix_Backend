@@ -4,18 +4,18 @@ const mongoose = require('mongoose');
 const BookingSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // Optional: Reference to User model, assuming you have one
+    ref: 'User', // Reference to User model, assuming you have one
     required: true,
   },
   vendorId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Vendor', // Optional: Reference to Vendor model, assuming you have one
+    ref: 'Vendor', // Reference to Vendor model, assuming you have one
     required: true,
   },
   serviceTypeIds: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'ServiceType', // Reference to the service type model, assuming you have one
+      ref: 'ServiceType', // Reference to the service type model
       required: true,
     }
   ],
@@ -55,9 +55,21 @@ const BookingSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  // Service status, defaults to 'Pending'
+  serviceStatus: {
+    type: String,
+    enum: ['Pending','Confirmed', 'In Progress','Awaiting Parts','Ready For Pickup', 'Completed','Payment Pending','Closed'], // Define possible statuses
+    default: 'Pending',
+  },
+  // Completed service types, initially empty
+  completedServiceTypes: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'ServiceType', // Reference to the service type model
+    }
+  ],
 }, { timestamps: true }); // Add timestamps to track createdAt and updatedAt
 
-// Create the Booking model
 const Booking = mongoose.model('Booking', BookingSchema);
 
 module.exports = Booking;
