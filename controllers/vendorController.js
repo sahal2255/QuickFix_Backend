@@ -395,6 +395,20 @@ const bookedServices=async(req,res)=>{
 }
 
 
+const singleBooking=async(req,res)=>{
+  const bookingId = req.params.bookingid
+  try{
+    const bookedService=await Booking.findById(bookingId)
+    const serviceTypeDetails=await Service.find({
+      _id:{$in:bookedService.serviceTypeIds}
+    })    
+    console.log('type details',serviceTypeDetails)
+    res.status(200).json({bookedService,serviceTypeDetails})
+  }catch(error){
+    console.log('single booking get error',error)
+  }
+}
+
 module.exports = {
   
   VendorRegister,
@@ -407,5 +421,6 @@ module.exports = {
   vendorProfile,
   editVendorProfile,
   updateService,
-  bookedServices
+  bookedServices,
+  singleBooking
 };
