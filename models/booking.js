@@ -55,20 +55,18 @@ const BookingSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  // Service status, defaults to 'Pending'
   serviceStatus: {
     type: String,
     enum: ['Pending','Confirmed', 'In Progress','Awaiting Parts','Ready For Pickup', 'Cancelled','Completed','Payment Pending','Closed'], // Define possible statuses
     default: 'Pending',
   },
-  // Completed service types, initially empty
   completedServiceTypes: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'ServiceType', // Reference to the service type model
+      ref: 'ServiceType',
     }
   ],
-}, { timestamps: true }); // Add timestamps to track createdAt and updatedAt
+}, { timestamps: true }); 
 
 const Booking = mongoose.model('Booking', BookingSchema);
 

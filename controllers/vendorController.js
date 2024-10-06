@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 const Category = require("../models/categories");
 const Service = require("../models/services");
 const { service } = require("./userController");
+const Booking = require("../models/booking");
 const pendingOTPs = {};
 
 
@@ -191,7 +192,7 @@ const vendorLogout = (req, res) => {
   return res.status(200).json({ message: 'Logout Successful' });
 };
 
-module.exports = vendorLogout;
+
 
 const getCategories=async(req,res)=>{
   try{
@@ -380,6 +381,19 @@ const updateService = async (req, res) => {
 };
 
 
+const bookedServices=async(req,res)=>{
+  const vendorId=req.admin.vendorId
+  console.log(vendorId)
+  try{
+    const bookings=await Booking.find({vendorId})
+    console.log('fetched bookings',bookings)
+    res.status(200).json(bookings)
+  }catch(error){
+    console.log('error in fetching the booked srvices',error)
+  }
+  
+}
+
 
 module.exports = {
   
@@ -392,5 +406,6 @@ module.exports = {
   serviceGet,
   vendorProfile,
   editVendorProfile,
-  updateService
+  updateService,
+  bookedServices
 };
