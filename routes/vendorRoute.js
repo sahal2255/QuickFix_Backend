@@ -18,4 +18,6 @@ router.put('/vendor/updateprofile',upload.single('image'),authMiddleware,vendorC
 router.put('/vendor/updateservice/:id',upload.single('image'),authMiddleware,vendorController.updateService)
 router.get('/vendor/bookedservices',authMiddleware,vendorController.bookedServices)
 router.get('/vendor/singlebooking/:bookingid',authMiddleware,vendorController.singleBooking)
+router.put('/vendor/updatecompletion',authMiddleware,vendorController.updateCompletion)
+router.put('/vendor/updateservicestatus',authMiddleware,vendorController.updateServiceStatus)
 module.exports=router

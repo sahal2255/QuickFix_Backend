@@ -403,12 +403,58 @@ const singleBooking=async(req,res)=>{
       _id:{$in:bookedService.serviceTypeIds}
     })    
     console.log('type details',serviceTypeDetails)
+    console.log('sss',bookedService.completedServiceTypes)
+    
+    
+
     res.status(200).json({bookedService,serviceTypeDetails})
   }catch(error){
     console.log('single booking get error',error)
   }
 }
 
+const updateCompletion=async(req,res)=>{
+  const {serviceTypeId,bookingId}=req.body
+  
+  try{
+    const findBooking=await Booking.findById(bookingId)
+
+    const isIncludeServiceType=findBooking.serviceTypeIds.includes(serviceTypeId)
+    if(!isIncludeServiceType){
+      console.log('not include the service type')
+      return res.status(400).json({message:'Not Include the Service Type'})
+    }
+    const checkAlreadyCompleted=findBooking.completedServiceTypes.includes(serviceTypeId)
+    if(checkAlreadyCompleted){
+      console.log('alredy completed')
+      return res.status(400).json({message:'Already Completed The Service'})
+    }
+    findBooking.completedServiceTypes.push(serviceTypeId)
+    await findBooking.save()
+    res.status(200).json({message:'completion success'})
+  }catch(error){
+    console.log('error in pushing service to competion',error)
+  }
+}
+
+const updateServiceStatus=async(req,res)=>{
+  console.log('htting the update status ')
+  const {bookingId,newStatus}=req.body
+  console.log('booking id',bookingId)
+  console.log('new status',newStatus)
+  try{
+    const booking=await Booking.findById(bookingId)
+    console.log('founded booking',booking)
+    booking.serviceStatus=newStatus
+    await booking.save()
+    return res.status(200).json({
+      message: "Service status updated successfully.",
+      updatedStatus: booking.serviceStatus
+    });
+  }catch(error){
+    console.log('status updating error',error)
+  }
+}
 module.exports = {
   
   VendorRegister,
@@ -422,5 +468,7 @@ module.exports = {
   editVendorProfile,
   updateService,
   bookedServices,
-  singleBooking
+  singleBooking,
+  updateCompletion,
+  updateServiceStatus
 };
