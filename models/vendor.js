@@ -10,7 +10,15 @@ const VendorSchema = new mongoose.Schema({
   location: { type: String, required: true },
   isEnabled:{ type: Boolean, default: false },
   image: { type: String }, 
-  amenities: { type: [String], default: [] }
+  amenities: { type: [String], default: [] },
+  coupons: [
+    {
+      couponName: { type: String, required: true },
+      startDate: { type: Date, required: true },
+      endDate: { type: Date, required: true },
+      percentage: { type: Number, required: true }
+    }
+  ]
 });
 
 const Vendor = mongoose.model('Vendor', VendorSchema);

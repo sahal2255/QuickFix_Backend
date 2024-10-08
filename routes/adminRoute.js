@@ -14,5 +14,5 @@ router.put('/admin/updatevendorstatus',authMiddleware,adminController.updateVend
 router.get('/admin/vendorlist',authMiddleware,adminController.getVendorList)
 router.put('/admin/updatecategory',upload.none(), adminController.editCategory);
 router.get('/admin/userlist',authMiddleware,adminController.userGet)
-
+router.put('/admin/updateuserstatus',authMiddleware,adminController.updateUserStatus)
 module.exports=router

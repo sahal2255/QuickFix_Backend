@@ -179,6 +179,36 @@ const adminLogout = (req, res) => {
     res.clearCookie('token'); 
     return res.status(200).json({ message: 'Logout successful' });
 };
+
+
+const updateUserStatus = async (req, res) => {
+  console.log('Hitting the status updation route');
+  const {userId} = req.body.userId; // Get userId from the request body
+  console.log('UserID:', userId);
+
+  try {
+      const user = await User.findById(userId);
+      console.log('founded user',user)
+      if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+      }
+
+      console.log('Founded user:', user);
+      console.log('Current status:', user.isEnabled);
+
+      user.isEnabled = !user.isEnabled; // Toggle the isEnable status
+
+      await user.save();
+
+      console.log('Updated user status:', user.isEnabled);
+      return res.status(200).json({ message: 'User status updated successfully', user });
+  } catch (error) {
+      console.log('Error in the user status updation:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
 module.exports = {
     adminLogin,
     adminLogout,
@@ -188,5 +218,6 @@ module.exports = {
     editCategory,
     getVendorList,
     updateVendorStatus,
-    userGet
+    userGet,
+    updateUserStatus
 };

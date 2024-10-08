@@ -5,7 +5,7 @@ const UserSchema=mongoose.Schema({
     email:{type:String,required:true},
     phoneNumber:{type:String,required:true},
     password:{type:String,required:true},
-    isEnable:{type:Boolean,default:true},
+    isEnabled:{type:Boolean,default:true},
     refreshToken: { type: String }
 })
 
