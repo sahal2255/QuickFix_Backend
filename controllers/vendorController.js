@@ -455,6 +455,60 @@ const updateServiceStatus=async(req,res)=>{
     console.log('status updating error',error)
   }
 }
+
+
+const AddCoupon = async (req, res) => {
+  console.log('Hitting the coupon add route');
+  const { formData } = req.body;
+  console.log('Form data:', formData);
+  const vendorId = req.admin.vendorId;
+  console.log('Vendor ID:', vendorId);  
+
+  try {
+      const { couponName, couponValue, startDate, endDate } = formData;
+
+      if (!couponName || !couponValue || !startDate || !endDate) {
+          return res.status(400).json({ message: 'All fields are required' });
+      }
+      const vendor = await Vendor.findById(vendorId);
+      console.log('Vendor:', vendor);  // Log the vendor document
+      if (!vendor) {
+          return res.status(404).json({ message: 'Vendor not found' });
+      }
+      
+      const newCoupon = {
+          couponName,
+          couponValue,
+          startDate: new Date(startDate),
+          endDate: new Date(endDate),
+          isEnabled: true,
+      };
+
+      console.log('New coupon:', newCoupon);
+      vendor.coupons.push(newCoupon);
+      await vendor.save();
+      return res.status(201).json({ message: 'Coupon added successfully', coupon: newCoupon });
+
+  } catch (error) {
+      console.error('Error adding coupon:', error);
+      return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+};
+
+
+const couponGet=async(req,res)=>{
+  const vendorId=req.admin.vendorId
+  console.log('vendor id ',vendorId)
+  try{
+    const vendor =await Vendor.findById(vendorId)
+    console.log('vendor ',vendor)
+    const Coupons=vendor.coupons
+    // console.log(Coupons)
+    res.status(200).json(Coupons)
+  }catch(error){
+    console.log('error in coupon getting ',error)
+  }
+}
 module.exports = {
   
   VendorRegister,
@@ -470,5 +524,7 @@ module.exports = {
   bookedServices,
   singleBooking,
   updateCompletion,
-  updateServiceStatus
+  updateServiceStatus,
+  AddCoupon,
+  couponGet
 };

@@ -14,9 +14,10 @@ const VendorSchema = new mongoose.Schema({
   coupons: [
     {
       couponName: { type: String, required: true },
+      couponValue: { type: Number, required: true },
       startDate: { type: Date, required: true },
       endDate: { type: Date, required: true },
-      percentage: { type: Number, required: true }
+      isEnabled: { type: Boolean, default: true}
     }
   ]
 });

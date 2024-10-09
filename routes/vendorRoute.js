@@ -20,4 +20,6 @@ router.get('/vendor/bookedservices',authMiddleware,vendorController.bookedServic
 router.get('/vendor/singlebooking/:bookingid',authMiddleware,vendorController.singleBooking)
 router.put('/vendor/updatecompletion',authMiddleware,vendorController.updateCompletion)
 router.put('/vendor/updateservicestatus',authMiddleware,vendorController.updateServiceStatus)
+router.post('/vendor/addcoupon',authMiddleware,vendorController.AddCoupon)
+router.get('/vendor/coupons',authMiddleware,vendorController.couponGet)
 module.exports=router
