@@ -496,19 +496,35 @@ const AddCoupon = async (req, res) => {
 };
 
 
-const couponGet=async(req,res)=>{
-  const vendorId=req.admin.vendorId
-  console.log('vendor id ',vendorId)
-  try{
-    const vendor =await Vendor.findById(vendorId)
-    console.log('vendor ',vendor)
-    const Coupons=vendor.coupons
-    // console.log(Coupons)
-    res.status(200).json(Coupons)
-  }catch(error){
-    console.log('error in coupon getting ',error)
+const couponGet = async (req, res) => {
+  const vendorId = req.admin.vendorId;
+  console.log('vendor id ', vendorId);
+
+  try {
+    const vendor = await Vendor.findById(vendorId);
+    console.log('vendor ', vendor);
+
+    if (!vendor) {
+      return res.status(404).json({ message: 'Vendor not found' });
+    }
+
+    const formattedCoupons = vendor.coupons.map(coupon => ({
+      _id:coupon._id,
+      couponName: coupon.couponName,
+      couponValue: coupon.couponValue,
+      startDate: new Date(coupon.startDate).toLocaleDateString('en-GB'), // Format as 'DD/MM/YYYY'
+      endDate: new Date(coupon.endDate).toLocaleDateString('en-GB'),     // Format as 'DD/MM/YYYY'
+      isEnabled: coupon.isEnabled,
+    }));
+
+    res.status(200).json(formattedCoupons);
+
+  } catch (error) {
+    console.log('error in coupon getting ', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
-}
+};
+
 module.exports = {
   
   VendorRegister,
