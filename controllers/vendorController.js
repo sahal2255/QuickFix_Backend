@@ -459,19 +459,18 @@ const updateServiceStatus=async(req,res)=>{
 
 const AddCoupon = async (req, res) => {
   console.log('Hitting the coupon add route');
-  const { formData } = req.body;
-  console.log('Form data:', formData);
+  console.log('request body',req.body)
   const vendorId = req.admin.vendorId;
   console.log('Vendor ID:', vendorId);  
 
   try {
-      const { couponName, couponValue, startDate, endDate } = formData;
+      const { couponName, couponValue, startDate, endDate } = req.body;
 
       if (!couponName || !couponValue || !startDate || !endDate) {
           return res.status(400).json({ message: 'All fields are required' });
       }
       const vendor = await Vendor.findById(vendorId);
-      console.log('Vendor:', vendor);  // Log the vendor document
+      // console.log('Vendor:', vendor);  
       if (!vendor) {
           return res.status(404).json({ message: 'Vendor not found' });
       }
@@ -508,8 +507,11 @@ const couponGet = async (req, res) => {
       return res.status(404).json({ message: 'Vendor not found' });
     }
 
-    const formattedCoupons = vendor.coupons.map(coupon => ({
-      _id:coupon._id,
+    // Sort coupons by their creation date (_id) in descending order (latest first)
+    const sortedCoupons = vendor.coupons.sort((a, b) => b._id.getTimestamp() - a._id.getTimestamp());
+
+    const formattedCoupons = sortedCoupons.map(coupon => ({
+      _id: coupon._id,
       couponName: coupon.couponName,
       couponValue: coupon.couponValue,
       startDate: new Date(coupon.startDate).toLocaleDateString('en-GB'), // Format as 'DD/MM/YYYY'
@@ -526,12 +528,11 @@ const couponGet = async (req, res) => {
 };
 
 
+
 const editCoupon=async(req,res)=>{
   const vendorId=req.admin.vendorId
   const {editcouponid}=req.params
-  // console.log(req.body)
   const formData=req.body
-  console.log('formData',formData)
   try{
     const vendor = await Vendor.findOneAndUpdate(
       { _id: vendorId, 'coupons._id': editcouponid }, // Search by vendorId and coupon ID
@@ -545,6 +546,21 @@ const editCoupon=async(req,res)=>{
   }
 }
 
+const deleteCoupon=async(req,res)=>{
+  const vendorId=req.admin.vendorId
+  const {couponid}=req.params
+  try{
+    const vendor = await Vendor.findByIdAndUpdate(
+      vendorId,
+      { $pull: { coupons: { _id: couponid } } },
+      { new: true } 
+  );
+  console.log('coupon deleted successs',vendor)
+  return res.status(200).json({message:'Coupon Deleted Successfully',vendor})
+  }catch(error){
+    console.log('error in delete coupon route')
+  }
+}
 
 module.exports = {
   
@@ -564,5 +580,6 @@ module.exports = {
   updateServiceStatus,
   AddCoupon,
   couponGet,
-  editCoupon
+  editCoupon,
+  deleteCoupon
 };

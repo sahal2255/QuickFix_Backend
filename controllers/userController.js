@@ -57,12 +57,12 @@ const userLogin = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        if (!user.isEnable) {
+        if (!user.isEnabled) {
             return res.status(403).json({ message: 'User account is disabled' });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
-
+        console.log('matched')
         if (!isMatch) {
             return res.status(401).json({ message: 'Incorrect password' });
         }
