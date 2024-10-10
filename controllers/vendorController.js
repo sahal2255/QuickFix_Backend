@@ -525,6 +525,27 @@ const couponGet = async (req, res) => {
   }
 };
 
+
+const editCoupon=async(req,res)=>{
+  const vendorId=req.admin.vendorId
+  const {editcouponid}=req.params
+  // console.log(req.body)
+  const formData=req.body
+  console.log('formData',formData)
+  try{
+    const vendor = await Vendor.findOneAndUpdate(
+      { _id: vendorId, 'coupons._id': editcouponid }, // Search by vendorId and coupon ID
+      { $set: { 'coupons.$': formData } }, // Update the matched coupon with formData
+      { new: true } // Return the updated vendor document
+  );
+    console.log('vendor',vendor)
+
+    return res.status(200).json({ message: 'Coupon updated successfully', vendor });  }catch(error){
+    console.log('error in the update route',error)
+  }
+}
+
+
 module.exports = {
   
   VendorRegister,
@@ -542,5 +563,6 @@ module.exports = {
   updateCompletion,
   updateServiceStatus,
   AddCoupon,
-  couponGet
+  couponGet,
+  editCoupon
 };

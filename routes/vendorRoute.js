@@ -22,4 +22,5 @@ router.put('/vendor/updatecompletion',authMiddleware,vendorController.updateComp
 router.put('/vendor/updateservicestatus',authMiddleware,vendorController.updateServiceStatus)
 router.post('/vendor/addcoupon',authMiddleware,vendorController.AddCoupon)
 router.get('/vendor/coupons',authMiddleware,vendorController.couponGet)
+router.put('/vendor/editcoupon/:editcouponid',upload.none(),authMiddleware,vendorController.editCoupon)
 module.exports=router
