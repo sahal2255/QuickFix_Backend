@@ -2,7 +2,8 @@ const jwt = require('jsonwebtoken');
 const Admin = require('../models/admin');
 const Category=require('../models/categories');
 const Vendor = require('../models/vendor');
-const User=require('../models/user')
+const User=require('../models/user');
+const Booking = require('../models/booking');
 
 const adminLogin = async (req, res) => {
     console.log('admin login');
@@ -208,7 +209,20 @@ const updateUserStatus = async (req, res) => {
   }
 };
 
+const bookingGet=async(req,res)=>{
+  try{
+    const bookingDetails=await Booking.find()
+    console.log('booking getting',bookingDetails)
+    const totalPrice = bookingDetails.reduce((sum, booking) => {
+      return sum + Number(booking.totalAmount);
+    }, 0);
 
+    console.log('Total Price of all bookings:', totalPrice);
+    res.status(200).json({bookingDetails,totalPrice})
+  }catch(error){
+    console.log('booking get error',error)
+  }
+}
 module.exports = {
     adminLogin,
     adminLogout,
@@ -219,5 +233,6 @@ module.exports = {
     getVendorList,
     updateVendorStatus,
     userGet,
-    updateUserStatus
+    updateUserStatus,
+    bookingGet
 };

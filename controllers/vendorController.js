@@ -385,7 +385,7 @@ const bookedServices=async(req,res)=>{
   const vendorId=req.admin.vendorId
   console.log(vendorId)
   try{
-    const bookings=await Booking.find({vendorId})
+    const bookings = await Booking.find({ vendorId }).sort({ createdAt: -1 });
     console.log('fetched bookings',bookings)
     res.status(200).json(bookings)
   }catch(error){
