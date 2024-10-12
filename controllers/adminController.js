@@ -213,6 +213,10 @@ const bookingGet=async(req,res)=>{
   try{
     const bookingDetails=await Booking.find()
     console.log('booking getting',bookingDetails)
+    const pending = bookingDetails.filter(
+      detail => detail.serviceStatus === 'Cancelled'
+    ).length;
+    console.log('checking the function working',pending)
     const totalPrice = bookingDetails.reduce((sum, booking) => {
       return sum + Number(booking.totalAmount);
     }, 0);
@@ -223,6 +227,39 @@ const bookingGet=async(req,res)=>{
     console.log('booking get error',error)
   }
 }
+
+
+const monthlyRevenueAndBookings = async (req, res) => {
+  try {
+    const monthlyData = await Booking.aggregate([
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" }
+          },
+          totalRevenue: { $sum: { $toDouble: "$totalAmount" } }, 
+          totalBookings: { $sum: 1 } 
+        }
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } } // Sort by year and month
+    ]);
+
+    console.log('monthly data',monthlyData)
+    // Format the result to return an array of objects
+    const result = monthlyData.map(item => ({
+      month: `${item._id.month}-${item._id.year}`, // Format as "MM-YYYY"
+      totalRevenue: item.totalRevenue,
+      totalBookings: item.totalBookings
+    }));
+
+    console.log('result',result)
+    return res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    console.error('Error fetching monthly revenue and bookings:', error);
+    return res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
 module.exports = {
     adminLogin,
     adminLogout,
@@ -234,5 +271,6 @@ module.exports = {
     updateVendorStatus,
     userGet,
     updateUserStatus,
-    bookingGet
+    bookingGet,
+    monthlyRevenueAndBookings
 };
