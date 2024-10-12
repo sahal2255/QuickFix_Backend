@@ -211,7 +211,7 @@ const updateUserStatus = async (req, res) => {
 
 const bookingGet=async(req,res)=>{
   try{
-    const bookingDetails=await Booking.find()
+    const bookingDetails=await Booking.find().sort({ createdAt: -1 })
     console.log('booking getting',bookingDetails)
     const pending = bookingDetails.filter(
       detail => detail.serviceStatus === 'Cancelled'
@@ -260,6 +260,16 @@ const monthlyRevenueAndBookings = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
+
+
+const fetchByDates=async(req,res)=>{
+  console.log('hitting the date by fetch route')
+  const { startDate, endDate }=req.query
+
+  console.log('start date',startDate)
+  console.log('ended date',endDate)
+}
+
 module.exports = {
     adminLogin,
     adminLogout,
@@ -272,5 +282,6 @@ module.exports = {
     userGet,
     updateUserStatus,
     bookingGet,
-    monthlyRevenueAndBookings
+    monthlyRevenueAndBookings,
+    fetchByDates
 };

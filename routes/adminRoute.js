@@ -17,4 +17,5 @@ router.get('/admin/userlist',authMiddleware,adminController.userGet)
 router.put('/admin/updateuserstatus',authMiddleware,adminController.updateUserStatus)
 router.get('/admin/bookingdetails',authMiddleware,adminController.bookingGet)
 router.get('/admin/monthlydetails',authMiddleware,adminController.monthlyRevenueAndBookings)
+router.get('/admin/datebybooking',authMiddleware,adminController.fetchByDates)
 module.exports=router
