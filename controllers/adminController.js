@@ -268,6 +268,23 @@ const fetchByDates=async(req,res)=>{
 
   console.log('start date',startDate)
   console.log('ended date',endDate)
+  try{
+    const start=new Date(startDate)
+    const end=new Date(endDate)
+    end.setHours(23, 59, 59, 999);
+    console.log('new date setup',start)
+    const selectedDateBookings=await Booking.find({
+      createdAt:{
+        $gte:start,
+        $lte:end
+      }
+    })
+    console.log('selected date booking',selectedDateBookings)
+    return res.status(200).json({bookings:selectedDateBookings})
+    
+  }catch(error){
+    console.log('error in the corresponding date fetching ',error)
+  }
 }
 
 module.exports = {
@@ -285,3 +302,4 @@ module.exports = {
     monthlyRevenueAndBookings,
     fetchByDates
 };
+
