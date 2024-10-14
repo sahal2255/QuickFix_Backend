@@ -386,8 +386,10 @@ const bookedServices=async(req,res)=>{
   console.log(vendorId)
   try{
     const bookings = await Booking.find({ vendorId }).sort({ createdAt: -1 });
-    console.log('fetched bookings',bookings)
-    res.status(200).json(bookings)
+    const totalPrice=bookings.reduce((sum,booking)=>{
+      return sum + Number(booking.totalAmount)
+    },0)
+    res.status(200).json({bookings,totalPrice})
   }catch(error){
     console.log('error in fetching the booked srvices',error)
   }
@@ -458,10 +460,9 @@ const updateServiceStatus=async(req,res)=>{
 
 
 const AddCoupon = async (req, res) => {
-  console.log('Hitting the coupon add route');
-  console.log('request body',req.body)
+
   const vendorId = req.admin.vendorId;
-  console.log('Vendor ID:', vendorId);  
+  // console.log('Vendor ID:', vendorId);  
 
   try {
       const { couponName, couponValue, startDate, endDate } = req.body;
@@ -483,7 +484,7 @@ const AddCoupon = async (req, res) => {
           isEnabled: true,
       };
 
-      console.log('New coupon:', newCoupon);
+      // console.log('New coupon:', newCoupon);
       vendor.coupons.push(newCoupon);
       await vendor.save();
       return res.status(201).json({ message: 'Coupon added successfully', coupon: newCoupon });
@@ -501,7 +502,7 @@ const couponGet = async (req, res) => {
 
   try {
     const vendor = await Vendor.findById(vendorId);
-    console.log('vendor ', vendor);
+    // console.log('vendor ', vendor);
 
     if (!vendor) {
       return res.status(404).json({ message: 'Vendor not found' });
@@ -562,6 +563,19 @@ const deleteCoupon=async(req,res)=>{
   }
 }
 
+
+const monthlyDetails=async(req,res)=>{
+  console.log('hitting the monthly details route')
+  const vendorId=req.admin.vendorId
+  console.log('vendor id',vendorId)
+  try{
+    const monthlyData=await Booking.aggregate([
+      
+    ])
+  }catch(error){
+    console.log('error in the monthlydetails section',error)
+  }
+}
 module.exports = {
   
   VendorRegister,
@@ -581,5 +595,6 @@ module.exports = {
   AddCoupon,
   couponGet,
   editCoupon,
-  deleteCoupon
+  deleteCoupon,
+  monthlyDetails
 };

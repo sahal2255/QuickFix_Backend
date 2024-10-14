@@ -168,7 +168,7 @@ const updateVendorStatus=async(req,res)=>{
 const userGet=async(req,res)=>{
     console.log('found the userget route');
     try{
-        const userList=await User.find()
+        const userList=await User.find().sort({ _id: -1 });
         res.status(200).json(userList)
     }catch(error){
         console.log('fetching server side error',error);
@@ -184,7 +184,7 @@ const adminLogout = (req, res) => {
 
 const updateUserStatus = async (req, res) => {
   console.log('Hitting the status updation route');
-  const {userId} = req.body.userId; // Get userId from the request body
+  const { userId, isEnabled } = req.body;
   console.log('UserID:', userId);
 
   try {
