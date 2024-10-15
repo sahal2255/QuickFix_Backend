@@ -25,4 +25,5 @@ router.get('/vendor/coupons',authMiddleware,vendorController.couponGet)
 router.put('/vendor/editcoupon/:editcouponid',upload.none(),authMiddleware,vendorController.editCoupon)
 router.delete('/vendor/deletecoupon/:couponid',authMiddleware,vendorController.deleteCoupon)
 router.get('/vendor/monthlydetails',authMiddleware,vendorController.monthlyDetails)
+router.get('/vendor/bookingbydates',authMiddleware,vendorController.fetchByDates)
 module.exports=router

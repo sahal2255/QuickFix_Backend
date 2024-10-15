@@ -8,7 +8,7 @@ const Service = require("../models/services");
 const { service } = require("./userController");
 const Booking = require("../models/booking");
 const pendingOTPs = {};
-
+const mongoose=require('mongoose')
 
 // const CategoryGet=async (req,res)=>{
 //   try{
@@ -564,18 +564,102 @@ const deleteCoupon=async(req,res)=>{
 }
 
 
-const monthlyDetails=async(req,res)=>{
-  console.log('hitting the monthly details route')
-  const vendorId=req.admin.vendorId
-  console.log('vendor id',vendorId)
-  try{
-    const monthlyData=await Booking.aggregate([
-      
-    ])
-  }catch(error){
-    console.log('error in the monthlydetails section',error)
+const monthlyDetails = async (req, res) => {
+  console.log('Hitting the monthly details route');
+  const vendorId = req.admin.vendorId; // Assuming vendorId is available in the admin field
+
+  console.log('Vendor ID:', vendorId);
+
+  if (!vendorId) {
+    return res.status(400).json({ message: 'Vendor ID is required' });
   }
-}
+
+  try {
+    const matchedBookings = await Booking.aggregate([
+      { 
+        $match: { vendorId:new mongoose.Types.ObjectId(vendorId) } 
+      },
+      {
+                $group: {
+                  _id: {
+                    year: { $year: '$createdAt' },   
+                    month: { $month: '$createdAt' }  
+                  },
+                  totalRevenue: { 
+                    $sum: { $toDouble: '$totalAmount' }  
+                  },
+                  totalBookings: { 
+                    $sum: 1  
+                  }
+                }
+              },
+              { 
+                $sort: { '_id.year': 1, '_id.month': 1 } 
+              }
+    ]);
+
+    console.log('Matched Bookings:', matchedBookings);
+    const result = matchedBookings.map(item => ({
+      month: `${item._id.month}-${item._id.year}`, 
+      totalRevenue: item.totalRevenue,             
+      totalBookings: item.totalBookings            
+    }));
+
+    return res.status(200).json({ result });
+
+  } catch (error) {
+    console.log('Error in the monthlyDetails section:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+const fetchByDates = async (req, res) => {
+  const vendorId = req.admin.vendorId;
+  console.log('Vendor ID:', vendorId);
+
+  const { startDate, endDate } = req.query;
+
+  if (!vendorId) {
+    return res.status(400).json({ message: 'Vendor ID is required' });
+  }
+
+  if (!startDate || !endDate) {
+    return res.status(400).json({ message: 'Start and End dates are required' });
+  }
+
+  try {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999); // Set end time to the end of the day
+
+    const selectedBookings = await Booking.aggregate([
+      {
+        $match: {
+          vendorId: new mongoose.Types.ObjectId(vendorId), // Match by vendorId
+          createdAt: { 
+            $gte: start,  // Greater than or equal to startDate
+            $lte: end     // Less than or equal to endDate
+          }
+        }
+      }
+    ]);
+
+    console.log('Selected Bookings:', selectedBookings);
+
+    if (selectedBookings.length === 0) {
+      return res.status(404).json({ message: 'No bookings found for the given date range.' });
+    }
+
+    return res.status(200).json({ bookings: selectedBookings });
+
+  } catch (error) {
+    console.error('Error in fetchByDates:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+
 module.exports = {
   
   VendorRegister,
@@ -596,5 +680,6 @@ module.exports = {
   couponGet,
   editCoupon,
   deleteCoupon,
-  monthlyDetails
+  monthlyDetails,
+  fetchByDates
 };
