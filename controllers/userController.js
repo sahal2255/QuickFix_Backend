@@ -8,6 +8,7 @@ const Service = require('../models/services');
 const Categories=require('../models/categories')
 const Razorpay = require('razorpay');
 const Booking=require('../models/booking')
+const {sendBookingConfirmationEmail}=require('../services/emailService')
 
 
 const userSignup = async (req, res) => {
@@ -370,6 +371,12 @@ const confirmationForBooking = async (req, res) => {
         // Save the booking to the database
         await newBooking.save();
 
+        const userData=await User.findById(userId)
+        const userEmail=userData.email
+        console.log('user email',userEmail)
+
+
+        await sendBookingConfirmationEmail(userEmail, newBooking);
         // Respond with success message
         res.status(200).json({
             message: 'Booking confirmed and payment received.',
