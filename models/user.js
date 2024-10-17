@@ -1,10 +1,10 @@
 const mongoose=require('mongoose')
 
 const UserSchema=mongoose.Schema({
-    userName:{type:String,required:true},
+    userName:{type:String,required:false},
     email:{type:String,required:true},
-    phoneNumber:{type:String,required:true},
-    password:{type:String,required:true},
+    phoneNumber:{type:String,required:false},
+    password:{type:String,required:false},
     isEnabled:{type:Boolean,default:true},
     refreshToken: { type: String }
 })

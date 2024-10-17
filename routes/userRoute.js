@@ -17,4 +17,5 @@ router.post('/confirm-booking',authenticateToken,userController.confirmationForB
 router.get('/servicehistory',authenticateToken,userController.serviceHistory)
 router.get('/viewsingledetails/:bookingId',authenticateToken,userController.singleServiceDetails)
 router.put('/cancelservice/:bookingId',authenticateToken,userController.cancelBookedService)
+router.post('/loginwithgoogle',userController.loginWithGoogle)
 module.exports = router;

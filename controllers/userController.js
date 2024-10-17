@@ -9,7 +9,11 @@ const Categories=require('../models/categories')
 const Razorpay = require('razorpay');
 const Booking=require('../models/booking')
 const {sendBookingConfirmationEmail}=require('../services/emailService')
+const {OAuth2Client}=require('google-auth-library')
 
+
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const userSignup = async (req, res) => {
     try {
@@ -450,6 +454,62 @@ const cancelBookedService=async(req,res)=>{
     }
 }
 
+const loginWithGoogle=async(req,res)=>{
+    console.log('hitting to the signup with google login')
+    const {responseToken}=req.body
+    console.log('response token in the body',responseToken)
+    try {
+        const ticket=await client.verifyIdToken({
+            idToken:responseToken,
+            audience:process.env.GOOGLE_CLIENT_ID
+        })
+        const payload=ticket.getPayload()
+        // console.log('payload',payload)
+        const {email,name}=payload
+        let user=await User.findOne({email})
+        console.log('user',user)
+        if (!user) {
+            user = new User({
+                userName: name,
+                email: email,
+                isGoogleUser: true, 
+            });
+            await user.save();
+        }
+
+        const userPayload = { id: user._id, email: user.email };
+        const accessToken = generateAccessToken(userPayload);
+        const refreshToken = generateRefreshToken(userPayload);
+
+        user.refreshToken = refreshToken;
+        await user.save();
+        res.cookie('accessToken', accessToken, {
+            httpOnly: false,
+            secure: true,
+            sameSite: 'None',
+            expires: new Date(Date.now() + 5 * 60 * 1000)  // 5 minutes
+        });
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: false,
+            secure: true,
+            sameSite: 'None',
+            expires: new Date(Date.now() + 1 * 60 * 60 * 1000) // 1 hour
+        });
+        return res.status(200).json({
+            message: 'User logged in successfully',
+            // user: {
+            //     id: user._id,
+            //     email: user.email,
+            //     userName: user.userName,
+            //     isGoogleUser: true,
+            // },
+        });
+        
+    } catch (error) {
+        
+    }
+}
+
 module.exports = {
     userSignup,
     userLogin,
@@ -464,5 +524,6 @@ module.exports = {
     confirmationForBooking,
     serviceHistory,
     singleServiceDetails,
-    cancelBookedService
+    cancelBookedService,
+    loginWithGoogle
 };
