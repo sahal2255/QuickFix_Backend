@@ -8,7 +8,7 @@ const Booking = require('../models/booking');
 const adminLogin = async (req, res) => {
     console.log('admin login');
     const { email, password } = req.body;  
-    console.log('logging', req.body);
+    console.log('logging', email, password);
 
     try {
         // Find admin by email
