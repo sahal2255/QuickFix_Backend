@@ -248,9 +248,15 @@ const service = async (req, res) => {
     try{
         const Details=await Vendor.findById(serviceId)
         const ServiceTypes=await Service.find({vendorId:serviceId})
-        console.log('all service types',ServiceTypes);
+        console.log('coupon ',Details.coupons)     
+        const currentDate=new Date()
+        const validCoupons=Details.coupons.filter(coupon=>{
+            return new Date(coupon.endDate)>currentDate
+        })
+
+        console.log('valid couopons',validCoupons)
         
-        res.status(200).json({Details,ServiceTypes})
+        res.status(200).json({Details,ServiceTypes,validCoupons})
 
     }catch(error){
         console.error(error)
