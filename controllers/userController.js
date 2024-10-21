@@ -301,8 +301,9 @@ const service = async (req, res) => {
 
 const paymentConfirm = async (req, res) => {
     try {
-        const { paymentAmount } = req.body;
+        const { paymentAmount,couponId } = req.body;
         console.log('Payment Amount:', paymentAmount);
+        console.log('coupon id',couponId)
 
         var instance = new Razorpay({
             key_id: process.env.RAZORPAY_KEY_ID,
@@ -336,58 +337,75 @@ const paymentConfirm = async (req, res) => {
 
 
 const confirmationForBooking = async (req, res) => {
-    const { centerId, selectedServiceTypesDetails, totalPrice, paymentOption, paymentMethod, OrderAmount, formData } = req.body;
+    const { centerId, selectedServiceTypesDetails, couponId, totalPrice, paymentOption, paymentMethod, OrderAmount, formData } = req.body;
     const userId = req.user.id; // Assume req.user.id is available through authentication middleware
-    console.log('formdata',formData)
+    console.log('formdata', formData);
+    console.log('coupon id', couponId);
+    
     try {
         const selectedServiceTypeId = selectedServiceTypesDetails.map(service => service._id);
 
+        // Find the matched services based on the selected services
         const matched = await Service.find({
             vendorId: centerId,
             '_id': { $in: selectedServiceTypeId }
         });
 
+        // Fetch the vendor to check for the applied coupon
+        const vendor = await Vendor.findById(centerId);
+        const appliedCoupon = vendor.coupons.find(coupon => coupon._id.toString() === couponId);
+
+        // Calculate the total price of the selected services
         const TotalPrice = matched.map(item => Number(item.price));
         const calculatedTotalPrice = TotalPrice.reduce((acc, cur) => acc + cur);
 
-        const PayableAmount = OrderAmount / 100;
-
-        // Validate if the total prices match
+        // Ensure that the calculated total price matches the frontend totalPrice
         if (calculatedTotalPrice !== totalPrice) {
             return res.status(400).json({ error: 'Price mismatch' });
         }
 
-        console.log('Prices match, proceeding with booking.');
+        let finalPayableAmount = OrderAmount / 100; // Razorpay returns the amount in paise
+        let discountAmount = 0;
+
+        if (appliedCoupon) {
+            const discountPercentage = appliedCoupon.couponValue; // Assuming couponValue is percentage
+            discountAmount = (calculatedTotalPrice * discountPercentage) / 100;
+            finalPayableAmount = calculatedTotalPrice - discountAmount;
+
+            console.log(`Applied Coupon: ${appliedCoupon.couponName}, Discount: ${discountPercentage}%`);
+
+            if (discountAmount >= calculatedTotalPrice) {
+                finalPayableAmount = 0;
+            }
+        }
+
+        const balanceAmount = appliedCoupon ? 0 : (totalPrice - finalPayableAmount);
 
         const { paymentId, ownerName, phoneNumber, vehicleReg } = formData;
 
-        const balanceAmount = totalPrice - PayableAmount;
-
         const newBooking = new Booking({
             userId: userId,
-            vendorId: centerId, 
-            serviceTypeIds: selectedServiceTypeId, 
-            ownerName: ownerName, 
-            mobileNumber: phoneNumber, 
-            regNo: vehicleReg, 
-            paymentMethod: paymentMethod, 
-            paymentOption: paymentOption, 
+            vendorId: centerId,
+            serviceTypeIds: selectedServiceTypeId,
+            ownerName: ownerName,
+            mobileNumber: phoneNumber,
+            regNo: vehicleReg,
+            paymentMethod: paymentMethod,
+            paymentOption: paymentOption,
             totalAmount: totalPrice.toString(),
-            payedAmount: PayableAmount.toString(), 
-            paymentId: paymentId, 
-            balanceAmount: balanceAmount.toString() 
+            payedAmount: finalPayableAmount.toString(),
+            paymentId: paymentId,
+            balanceAmount: balanceAmount.toString() // Save the balance amount correctly
         });
 
         // Save the booking to the database
         await newBooking.save();
 
-        const userData=await User.findById(userId)
-        const userEmail=userData.email
-        console.log('user email',userEmail)
-
-
+        // Send a confirmation email (optional)
+        const userData = await User.findById(userId);
+        const userEmail = userData.email;
         await sendBookingConfirmationEmail(userEmail, newBooking);
-        // Respond with success message
+
         res.status(200).json({
             message: 'Booking confirmed and payment received.',
             booking: newBooking
@@ -397,6 +415,9 @@ const confirmationForBooking = async (req, res) => {
         res.status(500).json({ error: 'Error confirming booking.' });
     }
 };
+
+
+
 
 const serviceHistory=async(req,res)=>{
     const userId=req.user.id
