@@ -18,4 +18,6 @@ router.get('/servicehistory',authenticateToken,userController.serviceHistory)
 router.get('/viewsingledetails/:bookingId',authenticateToken,userController.singleServiceDetails)
 router.put('/cancelservice/:bookingId',authenticateToken,userController.cancelBookedService)
 router.post('/loginwithgoogle',userController.loginWithGoogle)
+router.post('/balanceconfirm',authenticateToken,userController.balanceConfirm)
+router.post('/payedbalanceamount',authenticateToken,userController.payedBalanceAmount)
 module.exports = router;

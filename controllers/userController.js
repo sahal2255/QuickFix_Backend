@@ -10,7 +10,7 @@ const Razorpay = require('razorpay');
 const Booking=require('../models/booking')
 const {sendBookingConfirmationEmail}=require('../services/emailService')
 const {OAuth2Client}=require('google-auth-library')
-
+const mongoose =require('mongoose')
 
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -528,7 +528,50 @@ const loginWithGoogle=async(req,res)=>{
         });
         
     } catch (error) {
-        
+        console.log('error in the login with google',error)
+    }
+}
+
+const balanceConfirm=async(req,res)=>{
+    
+    try {
+        const {bookingId,balancePrice}=req.body
+        if (!balancePrice || isNaN(balancePrice)) {
+            return res.status(400).json({ success: false, message: 'Invalid balance price' });
+          }
+        var instance=new Razorpay({
+            key_id:process.env.RAZORPAY_KEY_ID,
+            key_secret:process.env.RAZORPAY_KEY_SECRET
+        })
+        const options={
+            amount:balancePrice*100,
+            currency:"INR",
+            receipt:"receit#1",
+        };
+        const order = await instance.orders.create(options)
+        console.log('order in the balance pay section',order)
+        res.status(200).json({success:true,order})
+    } catch (error) {
+        console.log('error for the balance pay confirmation',error)
+    }
+}
+
+const payedBalanceAmount=async(req,res)=>{
+    const userId=req.user.id
+    const {bookingId,balanceAmount}=req.body
+    console.log('booking id',bookingId)
+    try{
+        const foundBooking = await Booking.aggregate([
+            { 
+                $match: { 
+                    _id: mongoose.Types.ObjectId(bookingId), // Match the bookingId
+                    userId: mongoose.Types.ObjectId(userId)  // Match the userId
+                } 
+            }
+        ]);
+        console.log('founded booking',foundBooking)
+    }catch(error){
+        console.log('error in to the payed balance funciton',error)
     }
 }
 
@@ -547,5 +590,7 @@ module.exports = {
     serviceHistory,
     singleServiceDetails,
     cancelBookedService,
-    loginWithGoogle
+    loginWithGoogle,
+    balanceConfirm,
+    payedBalanceAmount
 };
