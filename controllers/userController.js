@@ -558,18 +558,24 @@ const balanceConfirm=async(req,res)=>{
 
 const payedBalanceAmount=async(req,res)=>{
     const userId=req.user.id
-    const {bookingId,balanceAmount}=req.body
+    const {bookingId,balancePrice}=req.body
     console.log('booking id',bookingId)
+    console.log('balance amount',balancePrice)
     try{
-        const foundBooking = await Booking.aggregate([
-            { 
-                $match: { 
-                    _id: mongoose.Types.ObjectId(bookingId), // Match the bookingId
-                    userId: mongoose.Types.ObjectId(userId)  // Match the userId
-                } 
-            }
-        ]);
+        const foundBooking = await Booking.findById(bookingId)
         console.log('founded booking',foundBooking)
+        const updatedPayedAmount = parseFloat(foundBooking.payedAmount) + parseFloat(balancePrice);
+        console.log('updated payedAmount',updatedPayedAmount)
+
+        foundBooking.payedAmount=updatedPayedAmount
+        foundBooking.balanceAmount=0
+
+        await foundBooking.save()
+        res.status(200).json({
+            success: true,
+            message: 'Balance amount paid successfully.',
+            booking: foundBooking,
+          });
     }catch(error){
         console.log('error in to the payed balance funciton',error)
     }
