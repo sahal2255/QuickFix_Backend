@@ -1,9 +1,9 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -25,5 +25,7 @@
     "nodemon": "^3.1.4",
     "razorpay": "^2.9.4",
     "springedge": "^1.0.6"
-  }
+  },
+  "devDependencies": {},
+  "description": ""
 }
