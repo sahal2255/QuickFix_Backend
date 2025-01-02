@@ -17,13 +17,19 @@ app.use(cors({
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
+// app.use(cors({
+//     origin: 'http://localhost:5173/',
+//     methods: ['GET', 'POST','PUT','DELETE'],
+//     credentials: true,
+//     allowedHeaders: ['Content-Type', 'Authorization']
+// }));
 
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/', adminRoute);
-app.use('/', vendorRoute)
+app.use('/admin', adminRoute);
+app.use('/vendor', vendorRoute)
 app.use('/',userRoute)
 
 const mongoURI = process.env.MONGO_URL;
