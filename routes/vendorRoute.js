@@ -1,6 +1,6 @@
 const express=require('express')
 const router=express.Router()
-const vendorController=require('../controllersController')
+const vendorController=require('../controllers/vendorController')
 const authMiddleware=require('../middleware/authMiddleware')
 const upload =require('../utils/multer')
 
