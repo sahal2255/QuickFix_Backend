@@ -12,7 +12,7 @@ require('dotenv').config();
 const app = express();
 
 app.use(cors({
-    origin: 'https://quickfix-frontend.onrender.com',
+    origin: 'https://quick-fix-frontend.vercel.app/',
     methods: ['GET', 'POST','PUT','DELETE'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization']
